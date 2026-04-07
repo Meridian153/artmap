@@ -15,6 +15,8 @@ export const mockMuseums: MuseumSummary[] = [
     country_code: 'FR',
     artwork_count: 142,
     thumbnail_url: null,
+    latitude: 48.8600,
+    longitude: 2.3266,
   },
   {
     id: 'museum-002',
@@ -27,6 +29,8 @@ export const mockMuseums: MuseumSummary[] = [
     country_code: 'NL',
     artwork_count: 200,
     thumbnail_url: null,
+    latitude: 52.3584,
+    longitude: 4.8811,
   },
   {
     id: 'museum-003',
@@ -39,6 +43,8 @@ export const mockMuseums: MuseumSummary[] = [
     country_code: 'US',
     artwork_count: 315,
     thumbnail_url: null,
+    latitude: 40.7794,
+    longitude: -73.9632,
   },
   {
     id: 'museum-004',
@@ -51,6 +57,8 @@ export const mockMuseums: MuseumSummary[] = [
     country_code: 'FR',
     artwork_count: 278,
     thumbnail_url: null,
+    latitude: 48.8606,
+    longitude: 2.3376,
   },
   {
     id: 'museum-005',
@@ -63,6 +71,8 @@ export const mockMuseums: MuseumSummary[] = [
     country_code: 'KR',
     artwork_count: 89,
     thumbnail_url: null,
+    latitude: 37.5797,
+    longitude: 126.9770,
   },
   {
     id: 'museum-006',
@@ -75,6 +85,8 @@ export const mockMuseums: MuseumSummary[] = [
     country_code: 'IT',
     artwork_count: 253,
     thumbnail_url: null,
+    latitude: 43.7678,
+    longitude: 11.2553,
   },
 ]
 

@@ -15,8 +15,8 @@ export interface CountryBubbleProps {
   onClick?: (data: CountryMapData) => void
 }
 
-/** 국가별 중심 좌표 매핑 (ISO 3166-1 alpha-2) */
-const COUNTRY_COORDS: Record<string, { lng: number; lat: number }> = {
+/** 국가별 중심 좌표 매핑 (ISO 3166-1 alpha-2) — HomeMap에서 flyTo에도 사용 */
+export const COUNTRY_COORDS: Record<string, { lng: number; lat: number }> = {
   FR: { lng: 2.35, lat: 46.86 },
   NL: { lng: 5.29, lat: 52.13 },
   US: { lng: -98.58, lat: 39.83 },
