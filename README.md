@@ -33,39 +33,6 @@
 
 ---
 
-## 개발 환경 실행
-
-### 사전 요구사항
-
-- Node.js 20 이상
-- npm 10 이상
-
-### 설치 및 실행
-```bash
-# 패키지 설치
-npm install
-
-# 개발 서버 실행 (프론트 + API 통합)
-npm run dev
-```
-
-브라우저에서 [http://localhost:3000](http://localhost:3000) 접속
-
-### 환경변수 설정
-
-루트에 `.env.local` 파일 생성:
-```
-# 목업 모드 (DB 없이 개발 가능)
-NEXT_PUBLIC_USE_MOCK=true
-
-# DB 연동 시 아래 값 입력
-DATABASE_URL=postgresql://...
-```
-
-`NEXT_PUBLIC_USE_MOCK=true` 상태에서는 DB 없이 목업 데이터로 실행됩니다.
-
----
-
 ## 프로젝트 구조
 ```
 src/
