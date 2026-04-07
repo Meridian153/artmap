@@ -1,4 +1,5 @@
 // 홈 페이지 — 세계 지도에 국가별 작품 수 버블 마커 표시
+'use client'
 
 import dynamic from 'next/dynamic'
 
