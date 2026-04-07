@@ -42,6 +42,10 @@ export interface MuseumSummary {
   artwork_count: number
   /** 대표 이미지 URL */
   thumbnail_url: string | null
+  /** 위도 — 지도 마커 표시용 */
+  latitude: number
+  /** 경도 — 지도 마커 표시용 */
+  longitude: number
 }
 
 /** 미술관 상세 정보 (GET /museums/{id} 응답) */
