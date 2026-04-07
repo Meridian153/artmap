@@ -1,0 +1,313 @@
+// API 클라이언트 — 모든 API 호출의 중앙 진입점
+// NEXT_PUBLIC_USE_MOCK=true 이면 Mock 데이터 반환, false 이면 실제 API 호출
+
+import type { CountryMapData } from '@/types/map'
+import type { MuseumSummary, MuseumDetail } from '@/types/museum'
+import type { ArtistSummary, ArtistDetail, ArtistCountryDistribution } from '@/types/artist'
+import type { ArtworkSummary, ArtworkSummaryWithMuseum, ArtworkDetail } from '@/types/artwork'
+import type { SearchResult } from '@/types/search'
+import type { PaginatedResponse } from '@/types/common'
+import type { ProblemDetail } from '@/types/error'
+import { ApiError } from '@/lib/errors'
+
+import { mockCountryMapData } from '@/mocks/map'
+import { mockMuseums, mockMuseumDetail } from '@/mocks/museums'
+import { mockArtists, mockArtistDetail, mockArtistMapData } from '@/mocks/artists'
+import { mockArtworks, mockArtworkDetail } from '@/mocks/artworks'
+import { mockSearchResults } from '@/mocks/search'
+
+// ─── 설정 ────────────────────────────────────────────────────────────────────
+
+/** Mock 모드 여부 — true이면 실제 API 대신 Mock 데이터 사용 */
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === 'true'
+
+/** 실제 API 기본 경로 */
+const API_BASE = '/api/v1'
+
+// ─── 공통 fetch 헬퍼 ─────────────────────────────────────────────────────────
+
+/** undefined가 아닌 값만 쿼리 파라미터로 변환하는 헬퍼 */
+function buildSearchParams(params?: object): string {
+  if (!params) return ''
+  const sp = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      sp.set(key, String(value))
+    }
+  }
+  const query = sp.toString()
+  return query ? `?${query}` : ''
+}
+
+/**
+ * 실제 API 엔드포인트에 fetch 요청을 보내는 헬퍼
+ * - RFC 9457 에러 응답(application/problem+json)을 ApiError로 변환
+ * - 정상 응답은 JSON 파싱 후 T 타입으로 반환
+ */
+async function fetchApi<T>(
+  endpoint: string,
+  params?: object
+): Promise<T> {
+  const url = `${API_BASE}${endpoint}${buildSearchParams(params)}`
+  const response = await fetch(url)
+
+  // 에러 응답 처리
+  if (!response.ok) {
+    const contentType = response.headers.get('Content-Type') ?? ''
+    if (contentType.includes('application/problem+json')) {
+      const problem = (await response.json()) as ProblemDetail
+      throw new ApiError(problem)
+    }
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+  }
+
+  return response.json() as Promise<T>
+}
+
+// ─── 페이지네이션 헬퍼 ────────────────────────────────────────────────────────
+
+/** 배열을 PaginatedResponse 형태로 래핑하는 Mock 전용 헬퍼 */
+function paginate<T>(
+  items: T[],
+  page: number = 1,
+  perPage: number = 20
+): PaginatedResponse<T> {
+  const start = (page - 1) * perPage
+  return {
+    data: items.slice(start, start + perPage),
+    total: items.length,
+    page,
+    per_page: perPage,
+  }
+}
+
+// ─── 지도 API ────────────────────────────────────────────────────────────────
+
+/**
+ * 국가별 작품 수 집계 조회
+ * GET /api/v1/map/countries
+ */
+export async function getMapCountries(): Promise<CountryMapData[]> {
+  if (USE_MOCK) {
+    return mockCountryMapData
+  }
+  return fetchApi<CountryMapData[]>('/map/countries')
+}
+
+// ─── 미술관 API ──────────────────────────────────────────────────────────────
+
+export interface GetMuseumsParams {
+  country?: string
+  city?: string
+  page?: number
+  per_page?: number
+}
+
+/**
+ * 미술관 목록 조회
+ * GET /api/v1/museums
+ */
+export async function getMuseums(
+  params?: GetMuseumsParams
+): Promise<PaginatedResponse<MuseumSummary>> {
+  if (USE_MOCK) {
+    let filtered = mockMuseums
+    if (params?.country) {
+      const c = params.country.toLowerCase()
+      filtered = filtered.filter(
+        (m) =>
+          m.country_code.toLowerCase() === c ||
+          m.country_ko.includes(params.country!) ||
+          m.country_en.toLowerCase().includes(c)
+      )
+    }
+    if (params?.city) {
+      const c = params.city.toLowerCase()
+      filtered = filtered.filter(
+        (m) =>
+          m.city_ko.includes(params.city!) ||
+          m.city_en.toLowerCase().includes(c)
+      )
+    }
+    return paginate(filtered, params?.page, params?.per_page)
+  }
+  return fetchApi<PaginatedResponse<MuseumSummary>>('/museums', params)
+}
+
+/**
+ * 미술관 상세 조회
+ * GET /api/v1/museums/{id}
+ */
+export async function getMuseumById(id: string): Promise<MuseumDetail | null> {
+  if (USE_MOCK) {
+    return mockMuseumDetail[id] ?? null
+  }
+  return fetchApi<MuseumDetail>(`/museums/${id}`)
+}
+
+export interface GetMuseumArtworksParams {
+  page?: number
+  per_page?: number
+}
+
+/**
+ * 미술관 소장 작품 목록 조회
+ * GET /api/v1/museums/{id}/artworks
+ */
+export async function getMuseumArtworks(
+  id: string,
+  params?: GetMuseumArtworksParams
+): Promise<{ data: ArtworkSummary[]; total: number }> {
+  if (USE_MOCK) {
+    // current_museum.id가 일치하는 작품만 필터링
+    const filtered = mockArtworks.filter((aw) => aw.current_museum?.id === id)
+    const paged = paginate(filtered, params?.page, params?.per_page)
+    return { data: paged.data, total: paged.total }
+  }
+  return fetchApi<{ data: ArtworkSummary[]; total: number }>(
+    `/museums/${id}/artworks`,
+    params
+  )
+}
+
+// ─── 화가 API ────────────────────────────────────────────────────────────────
+
+export interface GetArtistsParams {
+  movement?: string
+  nationality?: string
+  sort?: string
+  page?: number
+  per_page?: number
+}
+
+/**
+ * 화가 목록 조회
+ * GET /api/v1/artists
+ */
+export async function getArtists(
+  params?: GetArtistsParams
+): Promise<PaginatedResponse<ArtistSummary>> {
+  if (USE_MOCK) {
+    let filtered = mockArtists
+    if (params?.nationality) {
+      const n = params.nationality.toLowerCase()
+      filtered = filtered.filter(
+        (a) =>
+          a.nationality_ko.includes(params.nationality!) ||
+          a.nationality_en.toLowerCase().includes(n)
+      )
+    }
+    return paginate(filtered, params?.page, params?.per_page)
+  }
+  return fetchApi<PaginatedResponse<ArtistSummary>>('/artists', params)
+}
+
+/**
+ * 화가 상세 조회
+ * GET /api/v1/artists/{id}
+ */
+export async function getArtistById(id: string): Promise<ArtistDetail | null> {
+  if (USE_MOCK) {
+    return mockArtistDetail[id] ?? null
+  }
+  return fetchApi<ArtistDetail>(`/artists/${id}`)
+}
+
+export interface GetArtistArtworksParams {
+  page?: number
+  per_page?: number
+}
+
+/**
+ * 화가 작품 목록 조회
+ * GET /api/v1/artists/{id}/artworks
+ */
+export async function getArtistArtworks(
+  id: string,
+  params?: GetArtistArtworksParams
+): Promise<{ data: ArtworkSummaryWithMuseum[]; total: number }> {
+  if (USE_MOCK) {
+    const filtered = mockArtworks.filter((aw) => aw.artist.id === id)
+    const paged = paginate(filtered, params?.page, params?.per_page)
+    return { data: paged.data, total: paged.total }
+  }
+  return fetchApi<{ data: ArtworkSummaryWithMuseum[]; total: number }>(
+    `/artists/${id}/artworks`,
+    params
+  )
+}
+
+/**
+ * 화가 작품 국가 분포 조회
+ * GET /api/v1/artists/{id}/map-data
+ */
+export async function getArtistMapData(
+  id: string
+): Promise<ArtistCountryDistribution[]> {
+  if (USE_MOCK) {
+    return mockArtistMapData[id] ?? []
+  }
+  return fetchApi<ArtistCountryDistribution[]>(`/artists/${id}/map-data`)
+}
+
+// ─── 작품 API ────────────────────────────────────────────────────────────────
+
+export interface GetArtworksParams {
+  artist_id?: string
+  movement?: string
+  status?: string
+  sort?: string
+  page?: number
+  per_page?: number
+}
+
+/**
+ * 작품 목록 조회
+ * GET /api/v1/artworks
+ */
+export async function getArtworks(
+  params?: GetArtworksParams
+): Promise<PaginatedResponse<ArtworkSummaryWithMuseum>> {
+  if (USE_MOCK) {
+    let filtered = mockArtworks
+    if (params?.artist_id) {
+      filtered = filtered.filter((aw) => aw.artist.id === params.artist_id)
+    }
+    if (params?.status) {
+      filtered = filtered.filter((aw) => aw.status === params.status)
+    }
+    return paginate(filtered, params?.page, params?.per_page)
+  }
+  return fetchApi<PaginatedResponse<ArtworkSummaryWithMuseum>>('/artworks', params)
+}
+
+/**
+ * 작품 상세 조회
+ * GET /api/v1/artworks/{id}
+ */
+export async function getArtworkById(id: string): Promise<ArtworkDetail | null> {
+  if (USE_MOCK) {
+    return mockArtworkDetail[id] ?? null
+  }
+  return fetchApi<ArtworkDetail>(`/artworks/${id}`)
+}
+
+// ─── 검색 API ────────────────────────────────────────────────────────────────
+
+export interface SearchParams {
+  q: string
+  type?: string
+  page?: number
+  per_page?: number
+}
+
+/**
+ * 통합 검색
+ * GET /api/v1/search
+ */
+export async function search(params: SearchParams): Promise<SearchResult> {
+  if (USE_MOCK) {
+    return mockSearchResults(params.q)
+  }
+  return fetchApi<SearchResult>('/search', params)
+}
