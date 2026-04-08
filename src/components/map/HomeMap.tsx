@@ -18,27 +18,29 @@ const MUSEUM_ZOOM_THRESHOLD = 4.5
 export function HomeMap() {
   // 국가별 버블 데이터
   const [countries, setCountries] = useState<CountryMapData[]>([])
-  // 선택된 국가의 미술관 목록
-  const [museums, setMuseums] = useState<MuseumSummary[]>([])
+  // 전 세계 미술관 목록 — 마운트 시 한 번만 로드
+  const [allMuseums, setAllMuseums] = useState<MuseumSummary[]>([])
   // 현재 지도 시점 — 줌 레벨 기반 조건부 렌더링에 사용
   const [viewState, setViewState] = useState({ longitude: 0, latitude: 20, zoom: 2 })
   // 현재 선택된 국가 코드
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(null)
   // 국가 데이터 로딩 상태
   const [loading, setLoading] = useState(true)
-  // 미술관 데이터 로딩 상태
-  const [isLoadingMuseums, setIsLoadingMuseums] = useState(false)
   // 국가 데이터 에러 상태
   const [error, setError] = useState(false)
 
   // 지도 인스턴스 ref — flyTo 등 명령형 API 사용
   const mapRef = useRef<MapRef>(null)
 
-  // 컴포넌트 마운트 시 국가별 작품 수 데이터 로딩
+  // 컴포넌트 마운트 시 국가 데이터와 전체 미술관 목록을 병렬 로드
   useEffect(() => {
-    getMapCountries()
-      .then((data) => {
-        setCountries(data)
+    Promise.all([
+      getMapCountries(),
+      getMuseums(),
+    ])
+      .then(([countryData, museumData]) => {
+        setCountries(countryData)
+        setAllMuseums(museumData.data)
         setLoading(false)
       })
       .catch(() => {
@@ -52,8 +54,8 @@ export function HomeMap() {
     setViewState(evt.viewState)
   }
 
-  // 국가 버블 클릭 핸들러 — flyTo 후 미술관 데이터 로드
-  async function handleBubbleClick(data: CountryMapData) {
+  // 국가 버블 클릭 핸들러 — flyTo 및 선택 국가 업데이트만 수행 (API 재호출 없음)
+  function handleBubbleClick(data: CountryMapData) {
     const coords = COUNTRY_COORDS[data.country_code]
     if (!coords) return
 
@@ -65,20 +67,9 @@ export function HomeMap() {
     })
 
     setSelectedCountryCode(data.country_code)
-    setIsLoadingMuseums(true)
-
-    // 해당 국가의 미술관 목록 로드
-    try {
-      const result = await getMuseums({ country: data.country_code })
-      setMuseums(result.data)
-    } catch {
-      setMuseums([])
-    } finally {
-      setIsLoadingMuseums(false)
-    }
   }
 
-  // "전체 지도 보기" 버튼 핸들러 — 세계 전체 뷰로 복귀
+  // "전체 지도 보기" 버튼 핸들러 — 세계 전체 뷰로 복귀 및 선택 해제
   function handleResetView() {
     mapRef.current?.flyTo({
       center: [0, 20],
@@ -86,7 +77,6 @@ export function HomeMap() {
       duration: 1500,
     })
     setSelectedCountryCode(null)
-    setMuseums([])
   }
 
   // 미술관 마커 클릭 핸들러 (향후 상세 페이지 이동으로 교체 예정)
@@ -132,24 +122,18 @@ export function HomeMap() {
             />
           ))}
 
-        {/* 줌 레벨 >= 4.5: 미술관 마커 표시 */}
+        {/* 줌 레벨 >= 4.5: 전 세계 미술관 마커 표시 */}
         {isZoomedIn &&
-          museums.map((museum) => (
+          allMuseums.map((museum) => (
             <MuseumMarker
               key={museum.id}
               museum={museum}
               onClick={handleMuseumClick}
+              highlighted={museum.country_code === selectedCountryCode}
             />
           ))}
-      </MapView>
 
-      {/* 미술관 데이터 로딩 오버레이 */}
-      {isLoadingMuseums && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2
-          bg-white/90 rounded-full shadow-md text-sm text-gray-600 pointer-events-none">
-          미술관 정보를 불러오는 중...
-        </div>
-      )}
+      </MapView>
 
       {/* "전체 지도 보기" 버튼 — zoom >= 4일 때만 표시 */}
       {viewState.zoom >= 4 && (
