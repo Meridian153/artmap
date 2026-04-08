@@ -12,10 +12,12 @@ export interface MuseumMarkerProps {
   museum: MuseumSummary
   /** 클릭 시 콜백 */
   onClick?: (museum: MuseumSummary) => void
+  /** 선택된 국가 소속 미술관 강조 여부 */
+  highlighted?: boolean
 }
 
 // 미술관 마커 컴포넌트
-export function MuseumMarker({ museum, onClick }: MuseumMarkerProps) {
+export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMarkerProps) {
   // 호버 상태 관리
   const [hovered, setHovered] = useState(false)
 
@@ -34,20 +36,19 @@ export function MuseumMarker({ museum, onClick }: MuseumMarkerProps) {
           </div>
         )}
 
-        {/* 마커 버튼 */}
+        {/* 마커 버튼 — highlighted 여부에 따라 크기/색상 변경 */}
         <button
           type="button"
-          onClick={() => {
-            console.log('미술관 클릭:', museum.name_ko)
-            onClick?.(museum)
-          }}
+          onClick={() => onClick?.(museum)}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           title={museum.name_ko}
-          className="flex items-center justify-center w-8 h-8 rounded-full
-            bg-white border-2 border-blue-700 shadow-md cursor-pointer
-            transition-all duration-200
-            hover:scale-125 hover:shadow-xl hover:border-blue-900"
+          className={`flex items-center justify-center rounded-full shadow-md cursor-pointer
+            transition-all duration-200 hover:scale-125 hover:shadow-xl
+            ${highlighted
+              ? 'w-12 h-12 bg-amber-50 border-[3px] border-amber-500 hover:border-amber-600'
+              : 'w-8 h-8 bg-white border-2 border-blue-700 hover:border-blue-900'
+            }`}
         >
           {/* 건물 아이콘 SVG (인라인) */}
           <svg
@@ -56,7 +57,7 @@ export function MuseumMarker({ museum, onClick }: MuseumMarkerProps) {
             height="16"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#1d4ed8"
+            stroke={highlighted ? '#d97706' : '#1d4ed8'}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
