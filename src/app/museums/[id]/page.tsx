@@ -8,6 +8,7 @@ import { getMuseumById } from '@/lib/api'
 import { ApiError } from '@/lib/errors'
 import { MuseumHero } from '@/components/museum/MuseumHero'
 import { MuseumInfo } from '@/components/museum/MuseumInfo'
+import { MuseumLocationMapWrapper } from '@/components/museum/MuseumLocationMapWrapper'
 import { MuseumArtworkGallery } from '@/components/museum/MuseumArtworkGallery'
 
 interface MuseumDetailPageProps {
@@ -56,6 +57,12 @@ export default async function MuseumDetailPage({ params }: MuseumDetailPageProps
     <div className="mx-auto max-w-4xl px-6 py-8">
       <MuseumHero museum={museum} />
       <MuseumInfo museum={museum} />
+      <MuseumLocationMapWrapper
+        latitude={museum.place.latitude}
+        longitude={museum.place.longitude}
+        name={museum.name_ko}
+        address={museum.place.address}
+      />
       <MuseumArtworkGallery museumId={museum.id} />
     </div>
   )

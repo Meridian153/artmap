@@ -53,42 +53,22 @@ export function MuseumInfo({ museum }: MuseumInfoProps) {
         </section>
       )}
 
-      {/* 기본 정보 — 주소, 웹사이트, 좌표(다음 단계에서 미니맵으로 대체) */}
-      <section className="rounded-lg border border-zinc-200 p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-          정보
-        </h2>
-        <dl className="mt-3 space-y-3 text-zinc-800">
-          {place.address && (
-            <div>
-              <dt className="text-xs text-zinc-500">주소</dt>
-              <dd className="mt-1">{place.address}</dd>
-            </div>
-          )}
-          {museum.website_url && (
-            <div>
-              <dt className="text-xs text-zinc-500">웹사이트</dt>
-              <dd className="mt-1">
-                <a
-                  href={museum.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  {museum.website_url}
-                </a>
-              </dd>
-            </div>
-          )}
-          <div>
-            <dt className="text-xs text-zinc-500">좌표</dt>
-            {/* 다음 단계에서 미니맵으로 대체 예정 */}
-            <dd className="mt-1 text-sm text-zinc-500">
-              {place.latitude}, {place.longitude}
-            </dd>
-          </div>
-        </dl>
-      </section>
+      {/* 웹사이트 — 외부 링크. 주소/좌표는 MuseumLocationMap에서 표시 */}
+      {museum.website_url && (
+        <section className="rounded-lg border border-zinc-200 p-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+            웹사이트
+          </h2>
+          <a
+            href={museum.website_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block text-blue-600 underline"
+          >
+            {museum.website_url}
+          </a>
+        </section>
+      )}
     </div>
   )
 }

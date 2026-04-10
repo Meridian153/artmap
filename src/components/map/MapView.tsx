@@ -19,6 +19,10 @@ export interface MapViewProps {
   className?: string
   /** 지도 이동/줌 이벤트 — viewState 동기화용 */
   onMove?: (evt: ViewStateChangeEvent) => void
+  /** 지도 인터랙션(드래그/줌/회전) 활성화 여부. 기본값 true */
+  interactive?: boolean
+  /** 우상단 줌 컨트롤(NavigationControl) 표시 여부. 기본값 true */
+  showNavigationControl?: boolean
 }
 
 /** OpenFreeMap 타일 스타일 URL */
@@ -32,6 +36,8 @@ export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
     children,
     className,
     onMove,
+    interactive = true,
+    showNavigationControl = true,
   },
   ref
 ) {
@@ -43,9 +49,16 @@ export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
         onMove={onMove}
+        // interactive=false 시 드래그/줌/회전/박스줌/터치 모두 비활성화
+        dragPan={interactive}
+        scrollZoom={interactive}
+        doubleClickZoom={interactive}
+        touchZoomRotate={interactive}
+        dragRotate={interactive}
+        keyboard={interactive}
       >
-        {/* 줌 버튼 */}
-        <NavigationControl position="top-right" />
+        {/* 줌 버튼 — showNavigationControl이 true일 때만 표시 */}
+        {showNavigationControl && <NavigationControl position="top-right" />}
         {children}
       </Map>
     </div>
