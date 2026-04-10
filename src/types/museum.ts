@@ -18,6 +18,15 @@ export interface PlaceInfo {
   country_code: string
   /** 도로명 주소 */
   address: string | null
+  /** 운영시간 — 요일/특이사항별 표시 문자열 배열 */
+  opening_hours: string[] | null
+  /** 입장료 정보 */
+  admission: {
+    /** 성인 요금 (통화 기호 포함 표시 문자열) */
+    adult: string
+    /** 할인/무료 등 부가 안내 */
+    notes?: string | null
+  } | null
 }
 
 /** 미술관 목록 카드 데이터 (GET /museums 응답의 data 항목) */

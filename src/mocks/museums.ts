@@ -13,7 +13,7 @@ export const mockMuseums: MuseumSummary[] = [
     country_ko: '프랑스',
     country_en: 'France',
     country_code: 'FR',
-    artwork_count: 142,
+    artwork_count: 2,
     thumbnail_url: null,
     latitude: 48.8600,
     longitude: 2.3266,
@@ -27,7 +27,7 @@ export const mockMuseums: MuseumSummary[] = [
     country_ko: '네덜란드',
     country_en: 'Netherlands',
     country_code: 'NL',
-    artwork_count: 200,
+    artwork_count: 3,
     thumbnail_url: null,
     latitude: 52.3584,
     longitude: 4.8811,
@@ -41,7 +41,7 @@ export const mockMuseums: MuseumSummary[] = [
     country_ko: '미국',
     country_en: 'United States',
     country_code: 'US',
-    artwork_count: 315,
+    artwork_count: 4,
     thumbnail_url: null,
     latitude: 40.7794,
     longitude: -73.9632,
@@ -55,7 +55,7 @@ export const mockMuseums: MuseumSummary[] = [
     country_ko: '프랑스',
     country_en: 'France',
     country_code: 'FR',
-    artwork_count: 278,
+    artwork_count: 3,
     thumbnail_url: null,
     latitude: 48.8606,
     longitude: 2.3376,
@@ -69,7 +69,7 @@ export const mockMuseums: MuseumSummary[] = [
     country_ko: '대한민국',
     country_en: 'South Korea',
     country_code: 'KR',
-    artwork_count: 89,
+    artwork_count: 2,
     thumbnail_url: null,
     latitude: 37.5797,
     longitude: 126.9770,
@@ -83,7 +83,7 @@ export const mockMuseums: MuseumSummary[] = [
     country_ko: '이탈리아',
     country_en: 'Italy',
     country_code: 'IT',
-    artwork_count: 253,
+    artwork_count: 2,
     thumbnail_url: null,
     latitude: 43.7678,
     longitude: 11.2553,
@@ -99,7 +99,7 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     description_ko: '파리 센 강변에 위치한 오르세 미술관은 옛 기차역을 개조해 만든 미술관으로, 1848년부터 1914년 사이의 인상주의와 후기 인상주의 걸작을 소장하고 있습니다.',
     description_en: 'Located on the left bank of the Seine in Paris, the Musée d\'Orsay is housed in a former railway station and holds an outstanding collection of Impressionist and Post-Impressionist masterpieces from 1848 to 1914.',
     website_url: 'https://www.musee-orsay.fr',
-    artwork_count: 142,
+    artwork_count: 2,
     thumbnail_url: null,
     place: {
       latitude: 48.8600,
@@ -110,6 +110,16 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
       country_en: 'France',
       country_code: 'FR',
       address: '1 Rue de la Légion d\'Honneur, 75007 Paris, France',
+      opening_hours: [
+        '화요일~일요일: 09:30 - 18:00',
+        '목요일: 21:45까지 야간 개장',
+        '월요일: 휴관',
+        '1월 1일, 5월 1일, 12월 25일: 휴관',
+      ],
+      admission: {
+        adult: '€16',
+        notes: '18세 미만 무료, 26세 미만 EU 거주자 무료, 매월 첫째 일요일 무료',
+      },
     },
   },
   'museum-002': {
@@ -119,7 +129,7 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     description_ko: '암스테르담에 위치한 반 고흐 미술관은 빈센트 반 고흐의 작품을 세계에서 가장 많이 소장하고 있으며, 그의 편지와 개인 소장품도 전시합니다.',
     description_en: 'Located in Amsterdam, the Van Gogh Museum houses the largest collection of Van Gogh\'s artworks in the world, including his paintings, drawings, and personal correspondence.',
     website_url: 'https://www.vangoghmuseum.nl',
-    artwork_count: 200,
+    artwork_count: 3,
     thumbnail_url: null,
     place: {
       latitude: 52.3584,
@@ -130,6 +140,16 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
       country_en: 'Netherlands',
       country_code: 'NL',
       address: 'Museumplein 6, 1071 DJ Amsterdam, Netherlands',
+      opening_hours: [
+        '매일: 09:00 - 18:00',
+        '금요일: 21:00까지 야간 개장',
+        '1월 1일: 휴관',
+        '성수기에는 사전 온라인 예약 필수',
+      ],
+      admission: {
+        adult: '€22',
+        notes: '17세 이하 무료, Museumkaart 소지자 무료',
+      },
     },
   },
   'museum-003': {
@@ -139,7 +159,7 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     description_ko: '뉴욕 센트럴파크 옆에 위치한 메트로폴리탄 미술관은 미국 최대의 미술관으로, 5,000년에 걸친 인류 문명의 예술품 약 50만 점을 소장하고 있습니다.',
     description_en: 'Located alongside Central Park in New York City, The Metropolitan Museum of Art is the largest art museum in the United States, with a permanent collection of approximately 500,000 objects spanning 5,000 years of world culture.',
     website_url: 'https://www.metmuseum.org',
-    artwork_count: 315,
+    artwork_count: 4,
     thumbnail_url: null,
     place: {
       latitude: 40.7794,
@@ -150,6 +170,16 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
       country_en: 'United States',
       country_code: 'US',
       address: '1000 Fifth Avenue, New York, NY 10028, USA',
+      opening_hours: [
+        '일요일~화요일, 목요일: 10:00 - 17:00',
+        '금요일~토요일: 10:00 - 21:00',
+        '수요일: 휴관',
+        '추수감사절, 12월 25일, 1월 1일, 5월 첫째 월요일: 휴관',
+      ],
+      admission: {
+        adult: '$30',
+        notes: '뉴욕주 거주자 및 NY/NJ/CT 학생은 자율 기부제, 12세 미만 무료',
+      },
     },
   },
   'museum-004': {
@@ -159,7 +189,7 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     description_ko: '세계 최대 규모의 미술관인 루브르 박물관은 파리 중심부에 위치하며, 레오나르도 다 빈치의 모나리자를 비롯한 인류의 위대한 예술 유산을 소장하고 있습니다.',
     description_en: 'The Louvre is the world\'s largest art museum, located in central Paris. It is home to Leonardo da Vinci\'s Mona Lisa and many other priceless works representing the great art of humanity.',
     website_url: 'https://www.louvre.fr',
-    artwork_count: 278,
+    artwork_count: 3,
     thumbnail_url: null,
     place: {
       latitude: 48.8606,
@@ -170,6 +200,16 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
       country_en: 'France',
       country_code: 'FR',
       address: 'Rue de Rivoli, 75001 Paris, France',
+      opening_hours: [
+        '월요일, 목요일, 토요일~일요일: 09:00 - 18:00',
+        '수요일, 금요일: 21:45까지 야간 개장',
+        '화요일: 휴관',
+        '1월 1일, 5월 1일, 12월 25일: 휴관',
+      ],
+      admission: {
+        adult: '€22',
+        notes: '18세 미만 무료, 26세 미만 EU 거주자 무료, 온라인 예매 권장',
+      },
     },
   },
   'museum-005': {
@@ -179,7 +219,7 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     description_ko: '국립현대미술관은 한국 근현대 미술의 중심 기관으로, 서울, 과천, 덕수궁, 청주 4개 관에서 한국 및 국제 현대미술 작품을 전시합니다.',
     description_en: 'The National Museum of Modern and Contemporary Art is the central institution of modern Korean art, with four venues in Seoul, Gwacheon, Deoksugung, and Cheongju.',
     website_url: 'https://www.mmca.go.kr',
-    artwork_count: 89,
+    artwork_count: 2,
     thumbnail_url: null,
     place: {
       latitude: 37.5797,
@@ -190,6 +230,16 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
       country_en: 'South Korea',
       country_code: 'KR',
       address: '30 Samcheong-ro, Sogyeok-dong, Jongno-gu, Seoul, South Korea',
+      opening_hours: [
+        '화요일~일요일: 10:00 - 18:00',
+        '수요일, 토요일: 21:00까지 야간 개장',
+        '월요일: 휴관',
+        '1월 1일, 설날·추석 당일: 휴관',
+      ],
+      admission: {
+        adult: '4,000원',
+        notes: '24세 이하 및 65세 이상 무료, 매월 마지막 수요일(문화가 있는 날) 무료',
+      },
     },
   },
   'museum-006': {
@@ -199,7 +249,7 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     description_ko: '피렌체의 아르노 강변에 위치한 우피치 미술관은 르네상스 시대의 걸작을 세계에서 가장 풍부하게 소장한 미술관 중 하나입니다.',
     description_en: 'Located on the banks of the Arno in Florence, the Uffizi Gallery houses one of the richest collections of Renaissance masterpieces in the world.',
     website_url: 'https://www.uffizi.it',
-    artwork_count: 253,
+    artwork_count: 2,
     thumbnail_url: null,
     place: {
       latitude: 43.7678,
@@ -210,6 +260,16 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
       country_en: 'Italy',
       country_code: 'IT',
       address: 'Piazzale degli Uffizi, 6, 50122 Firenze, Italy',
+      opening_hours: [
+        '화요일~일요일: 08:15 - 18:30',
+        '월요일: 휴관',
+        '1월 1일, 12월 25일: 휴관',
+        '성수기에는 사전 온라인 예약 강력 권장',
+      ],
+      admission: {
+        adult: '€25',
+        notes: '18세 미만 무료, 매월 첫째 일요일 무료, 성수기·비수기에 따라 요금 변동',
+      },
     },
   },
 }
