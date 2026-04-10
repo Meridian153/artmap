@@ -2,8 +2,8 @@
 
 /** 페이지네이션이 적용된 목록 응답 공통 구조 */
 export interface PaginatedResponse<T> {
-  data: T[]
-  total: number
-  page: number
-  per_page: number
+  data: T[];
+  total: number;
+  page: number;
+  per_page: number;
 }

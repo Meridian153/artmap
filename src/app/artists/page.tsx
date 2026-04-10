@@ -9,5 +9,5 @@ export default function ArtistsPage() {
         화가 목록 페이지입니다. 화가 카드 그리드가 여기에 표시됩니다.
       </p>
     </div>
-  )
+  );
 }

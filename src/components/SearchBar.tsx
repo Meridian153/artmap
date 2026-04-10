@@ -2,16 +2,16 @@
 
 // Props 인터페이스
 export interface SearchBarProps {
-  className?: string
+  className?: string;
 }
 
 // 검색바 UI 컴포넌트 (실제 검색 기능은 추후 구현)
-export function SearchBar({ className = '' }: SearchBarProps) {
+export function SearchBar({ className = "" }: SearchBarProps) {
   return (
     <div className={`relative flex items-center ${className}`}>
       {/* 검색 아이콘 (SVG) */}
       <svg
-        className="absolute left-3 text-gray-400 pointer-events-none"
+        className="pointer-events-none absolute left-3 text-gray-400"
         width={16}
         height={16}
         viewBox="0 0 24 24"
@@ -29,10 +29,8 @@ export function SearchBar({ className = '' }: SearchBarProps) {
       <input
         type="search"
         placeholder="화가, 작품, 미술관 검색..."
-        className="w-full pl-9 pr-4 py-2 text-sm bg-gray-100 border border-transparent rounded-full
-          focus:outline-none focus:border-gray-300 focus:bg-white transition-colors
-          placeholder:text-gray-400"
+        className="w-full rounded-full border border-transparent bg-gray-100 py-2 pr-4 pl-9 text-sm transition-colors placeholder:text-gray-400 focus:border-gray-300 focus:bg-white focus:outline-none"
       />
     </div>
-  )
+  );
 }

@@ -9,5 +9,5 @@ export default function MuseumsPage() {
         미술관 목록 페이지입니다. 미술관 카드 리스트가 여기에 표시됩니다.
       </p>
     </div>
-  )
+  );
 }
