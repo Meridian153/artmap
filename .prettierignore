@@ -1,0 +1,24 @@
+# Next.js 빌드 산출물
+.next/
+out/
+build/
+
+# 의존성
+node_modules/
+
+# 패키지 매니저 lock 파일 (자동 생성)
+pnpm-lock.yaml
+package-lock.json
+
+# Drizzle Kit 마이그레이션 출력 (자동 생성 SQL)
+drizzle/
+
+# 정적 에셋
+public/
+
+# 바이너리/문서
+*.doc
+*.docx
+
+# Git 훅 (쉘 스크립트)
+.husky/
