@@ -2,40 +2,39 @@
 
 ---
 
+## 코딩 스타일 규칙 — 단일 진실 원천
+
+이 프로젝트의 코딩 스타일 규칙은 `.gemini/styleguide.md`에 단일 진실 원천으로
+존재합니다. 모든 코드 작성 전 반드시 `.gemini/styleguide.md`를 참조해야 합니다.
+
+CLAUDE.md(이 파일)는 Claude Code의 작업 절차와 운영 규칙만 정의하며, 코딩
+스타일은 정의하지 않습니다.
+
+CLAUDE.md와 `.gemini/styleguide.md` 사이에 충돌이 발생하면 항상
+`.gemini/styleguide.md`가 우선합니다.
+
+---
+
 # Claude Code 전용 작업 규칙
+
+## 작업 시작 시 필수 확인 사항
+
+새 작업을 시작할 때 반드시 다음 순서를 따른다:
+
+1. 사용자의 지시를 정확히 이해
+2. 관련 파일을 먼저 읽어 현재 상태 파악
+3. `.gemini/styleguide.md`의 관련 섹션 확인
+4. 기존 코드 패턴이 styleguide와 다르더라도 새 코드는 styleguide를 따른다
+
+---
 
 ## 작업 방식
 
 - 작업 시작 전 관련 파일을 먼저 읽고 현재 상태 파악
-- 수정할 파일이 있으면 기존 코드 패턴을 먼저 확인하고, 동일 패턴으로 작성
+- 수정할 파일이 있으면 기존 코드를 먼저 확인하되, 스타일 결정은
+  `.gemini/styleguide.md`를 우선 적용
 - 새 파일 생성 시 파일 상단에 이 파일의 역할을 한국어 주석으로 설명
 - 모든 함수와 주요 로직 블록에 한국어 주석 포함
-
----
-
-## 컴포넌트 규칙
-
-- Props 타입을 반드시 `interface`로 별도 정의하고 `export`
-- 컴포넌트 파일 하나에 컴포넌트 하나 (단일 책임)
-- 컴포넌트 Props에 선택적 속성은 기본값 제공
-
-```tsx
-// import 순서: React/Next.js → 외부 라이브러리 → 내부 모듈 → 타입
-import { useState } from 'react'
-import Link from 'next/link'
-import type { ArtistSummary } from '@/types/artist'
-
-// Props 인터페이스는 컴포넌트 바로 위에 정의하고 export
-export interface ArtistCardProps {
-  artist: ArtistSummary
-  showMuseum?: boolean  // 선택적 속성은 기본값 제공
-}
-
-// named export 사용 (page.tsx, layout.tsx, route.ts 제외)
-export function ArtistCard({ artist, showMuseum = true }: ArtistCardProps) {
-  return ( /* JSX */ )
-}
-```
 
 ---
 
@@ -65,27 +64,11 @@ export function ArtistCard({ artist, showMuseum = true }: ArtistCardProps) {
 - **라이브러리**: `react-map-gl/maplibre` (이 import 경로를 정확히 사용할 것)
 - **타일**: OpenFreeMap (API 키 불필요)
 - MapLibre는 브라우저 전용 → 서버 사이드 렌더링 불가
-- 지도 컴포넌트는 반드시 `'use client'` 디렉티브 또는
-  `dynamic import with { ssr: false }`
+- 지도 컴포넌트는 반드시 `"use client"` 디렉티브 또는
+  `dynamic import with { ssr: false }` 사용
 
-```tsx
-// ✅ 올바른 방법
-import { Map, Marker } from "react-map-gl/maplibre";
-import "maplibre-gl/dist/maplibre-gl.css";
-
-// ❌ 잘못된 방법 — Mapbox(유료)로 연결됨
-import { Map, Marker } from "react-map-gl";
-```
-
-```tsx
-// SSR 방지 dynamic import 패턴
-import dynamic from "next/dynamic";
-
-const ArtMap = dynamic(() => import("@/components/ArtMap"), {
-  ssr: false,
-  loading: () => <div>지도를 불러오는 중...</div>,
-});
-```
+> 실제 코드 작성 시 import 문/따옴표/세미콜론 등 스타일 표기는
+> `.gemini/styleguide.md`와 `.prettierrc`를 따른다.
 
 ---
 
@@ -103,6 +86,9 @@ const ArtMap = dynamic(() => import("@/components/ArtMap"), {
 | 유틸 함수      | `src/lib/{utilName}.ts`              |
 | API 클라이언트 | `src/lib/api.ts`                     |
 | Mock 데이터    | `src/mocks/{domain}.ts`              |
+
+> 파일명의 대소문자/구분자 표기 규칙(PascalCase, kebab-case 등)은
+> `.gemini/styleguide.md`를 따른다.
 
 ---
 
@@ -126,6 +112,8 @@ chore:    설정, 빌드 관련
 - `sql/` 하위 파일 — DB 스키마 변경 (마이그레이션 필요)
 - `src/app/layout.tsx` — 전체 페이지 레이아웃
 - `src/types/` 하위 파일 — 모든 컴포넌트 타입에 영향
+- `.gemini/styleguide.md` — 단일 스타일 진실 원천 (사용자의 명시 승인 없이 변경
+  금지)
 
 ---
 

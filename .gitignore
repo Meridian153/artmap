@@ -33,6 +33,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# .env.example은 환경 변수 템플릿이므로 추적함
+!.env.example
 
 # vercel
 .vercel

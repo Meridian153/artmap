@@ -49,14 +49,21 @@ sql/              → SQL 스키마 및 마이그레이션
 
 ---
 
-## 코딩 컨벤션
+## 코딩 스타일
+
+이 프로젝트의 모든 코딩 스타일 규칙은 `.gemini/styleguide.md`에 단일 진실
+원천으로 정의되어 있습니다. 파일 네이밍, 타입 정의 방식, 들여쓰기, 따옴표 등
+모든 스타일 결정은 styleguide를 따릅니다.
+
+이 파일(AGENTS.md)은 도메인 규칙(다국어, UUID, 에러 응답 등)과 금지 사항만
+정의합니다.
+
+---
+
+## 도메인 규칙
 
 - **TypeScript**: strict 모드. `any` 타입 사용 금지 (`unknown` 또는 구체적 타입
   사용)
-- **스타일링**: Tailwind CSS만 사용. 별도 CSS 파일 생성 금지
-- **컴포넌트**: 함수형 컴포넌트 + React Hooks. class 컴포넌트 금지
-- **파일 네이밍**: 컴포넌트 PascalCase, 유틸/훅 camelCase
-- **import 순서**: React/Next.js → 외부 라이브러리 → 내부 모듈 → 타입
 - **다국어**: 모든 텍스트 필드는 한/영 분리 (`_ko`, `_en` 접미사)
 - **ID**: UUID 형식
 - **API 에러 응답**: RFC 9457 (`application/problem+json`) 형식

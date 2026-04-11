@@ -58,3 +58,67 @@ sql/
 
 - API 명세서: OpenAPI v1.3.0 (프로젝트 내부 문서 참조)
 - ERD: 프로젝트 내부 문서 참조
+
+---
+
+## 로컬 개발 셋업
+
+### 1. 저장소 클론 및 의존성 설치
+
+```bash
+git clone https://github.com/Meridian153/artmap.git
+cd artmap
+pnpm install
+```
+
+### 2. 환경 변수 설정
+
+프로젝트 루트에 `.env.local` 파일을 생성합니다. `.env.example`을 복사해서
+시작하면 됩니다.
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local` 내용 (MVP 단계):
+
+```
+NEXT_PUBLIC_USE_MOCK=true
+```
+
+**MVP 단계에서는 반드시 `NEXT_PUBLIC_USE_MOCK=true`로 설정해야 합니다.** 이 값이
+없거나 `false`이면 프론트엔드가 아직 존재하지 않는 실제 API
+엔드포인트(`/api/v1/...`)를 호출해 홈 지도가 뜨지 않습니다.
+
+### 3. 개발 서버 실행
+
+```bash
+pnpm dev
+```
+
+브라우저에서 http://localhost:3000 접속.
+
+---
+
+## 트러블슈팅
+
+### 홈 화면에 지도가 안 보이고 Console에 `/api/v1/map/countries 404` 에러
+
+`.env.local` 파일이 없거나 `NEXT_PUBLIC_USE_MOCK=true`가 설정되지 않은
+상태입니다. 위의 "환경 변수 설정" 단계를 확인하세요. `.env.local` 수정 후에는
+`pnpm dev`를 재시작해야 합니다 (Ctrl+C 후 다시 실행).
+
+### 커밋 시 "husky" 또는 "prettier" 관련 에러로 거부됨
+
+이 프로젝트는 Husky pre-commit 훅을 통해 커밋 직전 Prettier 포맷 검사를
+실행합니다. 포맷이 맞지 않는 파일이 있으면 커밋이 거부됩니다.
+
+해결 방법:
+
+```bash
+pnpm prettier --write .
+git add -A
+git commit
+```
+
+또는 IDE의 Prettier 확장에서 formatOnSave를 켜두면 자동으로 포맷됩니다.
