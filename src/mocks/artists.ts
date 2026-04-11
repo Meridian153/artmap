@@ -59,7 +59,40 @@ export const mockArtists: ArtistSummary[] = [
     artwork_count: 19,
     thumbnail_url: null,
   },
-];
+  {
+    id: 'artist-006',
+    name_ko: '산드로 보티첼리',
+    name_en: 'Sandro Botticelli',
+    birth_year: 1445,
+    death_year: 1510,
+    nationality_ko: '이탈리아',
+    nationality_en: 'Italian',
+    artwork_count: 12,
+    thumbnail_url: null,
+  },
+  {
+    id: 'artist-007',
+    name_ko: '박수근',
+    name_en: 'Park Soo-keun',
+    birth_year: 1914,
+    death_year: 1965,
+    nationality_ko: '대한민국',
+    nationality_en: 'Korean',
+    artwork_count: 8,
+    thumbnail_url: null,
+  },
+  {
+    id: 'artist-008',
+    name_ko: '김환기',
+    name_en: 'Kim Whanki',
+    birth_year: 1913,
+    death_year: 1974,
+    nationality_ko: '대한민국',
+    nationality_en: 'Korean',
+    artwork_count: 10,
+    thumbnail_url: null,
+  },
+]
 
 /** 화가 상세 Mock 데이터 (ID별) */
 export const mockArtistDetail: Record<string, ArtistDetail> = {
