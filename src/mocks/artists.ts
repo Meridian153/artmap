@@ -67,7 +67,7 @@ export const mockArtists: ArtistSummary[] = [
     death_year: 1510,
     nationality_ko: "이탈리아",
     nationality_en: "Italian",
-    artwork_count: 12,
+    artwork_count: 1,
     thumbnail_url: null,
   },
   {
@@ -78,7 +78,7 @@ export const mockArtists: ArtistSummary[] = [
     death_year: 1965,
     nationality_ko: "대한민국",
     nationality_en: "Korean",
-    artwork_count: 8,
+    artwork_count: 1,
     thumbnail_url: null,
   },
   {
@@ -89,7 +89,7 @@ export const mockArtists: ArtistSummary[] = [
     death_year: 1974,
     nationality_ko: "대한민국",
     nationality_en: "Korean",
-    artwork_count: 10,
+    artwork_count: 1,
     thumbnail_url: null,
   },
 ];
@@ -181,6 +181,57 @@ export const mockArtistDetail: Record<string, ArtistDetail> = {
     artwork_count: 19,
     thumbnail_url: null,
   },
+  "artist-006": {
+    id: "artist-006",
+    name_ko: "산드로 보티첼리",
+    name_en: "Sandro Botticelli",
+    birth_year: 1445,
+    death_year: 1510,
+    nationality_ko: "이탈리아",
+    nationality_en: "Italian",
+    biography_ko:
+      "산드로 보티첼리(1445–1510)는 피렌체에서 활동한 초기 르네상스의 대표 화가입니다. 메디치 가문의 후원을 받아 신화와 종교를 주제로 한 우아하고 서정적인 걸작을 다수 제작했습니다. 대표작으로는 ‹비너스의 탄생›과 ‹봄(프리마베라)›이 있으며, 부드러운 선과 장식적 구성은 이후 유럽 회화에 깊은 영향을 미쳤고, 르네상스 회화의 이상적 아름다움을 상징하는 화가로 평가받습니다.",
+    biography_en:
+      "Sandro Botticelli (1445–1510) was a leading painter of the Early Renaissance active in Florence. Under the patronage of the Medici family, he produced numerous graceful and lyrical masterpieces on mythological and religious themes, most famously The Birth of Venus and Primavera. His flowing lines and decorative compositions deeply influenced later European painting and came to symbolize the ideal beauty of Renaissance art.",
+    style_ko: "초기 르네상스",
+    style_en: "Early Renaissance",
+    artwork_count: 1,
+    thumbnail_url: null,
+  },
+  "artist-007": {
+    id: "artist-007",
+    name_ko: "박수근",
+    name_en: "Park Soo-keun",
+    birth_year: 1914,
+    death_year: 1965,
+    nationality_ko: "대한민국",
+    nationality_en: "Korean",
+    biography_ko:
+      "박수근(1914–1965)은 한국 근대 미술을 대표하는 화가입니다. 화강암을 연상시키는 두꺼운 마티에르 기법으로 고유한 질감을 만들어 냈으며, 서민의 일상과 여인, 아이들을 주된 소재로 삼아 소박하고 따뜻한 정서를 화폭에 담았습니다. 대표작으로 ‹빨래터›와 ‹나무와 두 여인› 등이 있으며, 한국 전후 미술사에서 가장 사랑받는 작가 중 한 명으로 평가받습니다.",
+    biography_en:
+      "Park Soo-keun (1914–1965) is one of the most beloved painters in modern Korean art. He developed a distinctive technique of building thick, granite-like matière that gave his canvases a uniquely tactile surface. Drawing on the everyday lives of ordinary people — women, children, and village scenes — he expressed a humble and warm sensibility, most famously in works such as Women Washing Clothes by the Stream and Tree and Two Women.",
+    style_ko: "근대 한국 회화",
+    style_en: "Korean Modern Painting",
+    artwork_count: 1,
+    thumbnail_url: null,
+  },
+  "artist-008": {
+    id: "artist-008",
+    name_ko: "김환기",
+    name_en: "Kim Whanki",
+    birth_year: 1913,
+    death_year: 1974,
+    nationality_ko: "대한민국",
+    nationality_en: "Korean",
+    biography_ko:
+      "김환기(1913–1974)는 한국 추상 미술의 선구자로 꼽히는 화가입니다. 한국적 서정과 동양적 사유를 서구 추상 회화의 언어로 풀어냈으며, 뉴욕 시대에 완성한 점화(點畵) 연작은 그의 예술 세계를 대표하는 성취입니다. ‹우주(05-IV-71 #200)›를 비롯한 점화 작품들은 한국 미술 경매에서 최고가 기록을 여러 차례 경신해 왔습니다.",
+    biography_en:
+      "Kim Whanki (1913–1974) is regarded as a pioneer of Korean abstract painting. He translated the lyricism of Korean tradition and Eastern philosophy into the language of Western abstraction, and the dot paintings he completed during his New York years stand as the defining achievement of his career. Works such as Universe (05-IV-71 #200) have repeatedly set record prices at Korean art auctions.",
+    style_ko: "한국 추상 미술",
+    style_en: "Korean Abstract Art",
+    artwork_count: 1,
+    thumbnail_url: null,
+  },
 };
 
 /** 화가 작품 국가 분포 Mock 데이터 (ID별) */
@@ -260,6 +311,25 @@ export const mockArtistMapData: Record<string, ArtistCountryDistribution[]> = {
       country_name_ko: "미국",
       country_name_en: "United States",
       artwork_count: 4,
+    },
+  ],
+  "artist-006": [
+    { country_code: "IT", country_name_ko: "이탈리아", country_name_en: "Italy", artwork_count: 1 },
+  ],
+  "artist-007": [
+    {
+      country_code: "KR",
+      country_name_ko: "대한민국",
+      country_name_en: "South Korea",
+      artwork_count: 1,
+    },
+  ],
+  "artist-008": [
+    {
+      country_code: "KR",
+      country_name_ko: "대한민국",
+      country_name_en: "South Korea",
+      artwork_count: 1,
     },
   ],
 };
