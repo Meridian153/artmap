@@ -139,11 +139,13 @@ export async function getMuseumById(id: string): Promise<MuseumDetail | null> {
 export interface GetMuseumArtworksParams {
   page?: number;
   per_page?: number;
+  limit?: number;
 }
 
 /**
  * 미술관 소장 작품 목록 조회
  * GET /api/v1/museums/{id}/artworks
+ * limit이 있으면 page/per_page는 무시됩니다 (OpenAPI Spec v1.3.0 우선순위 규칙)
  */
 export async function getMuseumArtworks(
   id: string,
@@ -152,6 +154,9 @@ export async function getMuseumArtworks(
   if (USE_MOCK) {
     // current_museum.id가 일치하는 작품만 필터링
     const filtered = mockArtworks.filter((aw) => aw.current_museum?.id === id);
+    if (params?.limit !== undefined) {
+      return { data: filtered.slice(0, params.limit), total: filtered.length };
+    }
     const paged = paginate(filtered, params?.page, params?.per_page);
     return { data: paged.data, total: paged.total };
   }
@@ -204,11 +209,13 @@ export async function getArtistById(id: string): Promise<ArtistDetail | null> {
 export interface GetArtistArtworksParams {
   page?: number;
   per_page?: number;
+  limit?: number;
 }
 
 /**
  * 화가 작품 목록 조회
  * GET /api/v1/artists/{id}/artworks
+ * limit이 있으면 page/per_page는 무시됩니다 (OpenAPI Spec v1.3.0 우선순위 규칙)
  */
 export async function getArtistArtworks(
   id: string,
@@ -216,6 +223,9 @@ export async function getArtistArtworks(
 ): Promise<{ data: ArtworkSummaryWithMuseum[]; total: number }> {
   if (USE_MOCK) {
     const filtered = mockArtworks.filter((aw) => aw.artist.id === id);
+    if (params?.limit !== undefined) {
+      return { data: filtered.slice(0, params.limit), total: filtered.length };
+    }
     const paged = paginate(filtered, params?.page, params?.per_page);
     return { data: paged.data, total: paged.total };
   }
