@@ -31,8 +31,8 @@ export function MuseumInfo({ museum }: MuseumInfoProps) {
             운영 시간
           </h2>
           <ul className="mt-3 space-y-1 text-zinc-800">
-            {place.opening_hours.map((line, idx) => (
-              <li key={idx}>{line}</li>
+            {place.opening_hours.map((line) => (
+              <li key={line}>{line}</li>
             ))}
           </ul>
         </section>
