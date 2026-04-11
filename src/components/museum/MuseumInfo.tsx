@@ -3,7 +3,7 @@
 
 import type { MuseumDetail } from '@/types/museum'
 
-export interface MuseumInfoProps {
+export type MuseumInfoProps = {
   museum: MuseumDetail
 }
 

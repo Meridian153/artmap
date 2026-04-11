@@ -4,7 +4,7 @@
 import Link from 'next/link'
 import { getMuseumArtworks } from '@/lib/api'
 
-export interface MuseumArtworkGalleryProps {
+export type MuseumArtworkGalleryProps = {
   museumId: string
 }
 

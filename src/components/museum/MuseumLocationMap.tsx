@@ -6,7 +6,7 @@
 import { Marker } from 'react-map-gl/maplibre'
 import { MapView } from '@/components/map/MapView'
 
-export interface MuseumLocationMapProps {
+export type MuseumLocationMapProps = {
   /** 미술관 위도 */
   latitude: number
   /** 미술관 경도 */
@@ -37,8 +37,8 @@ export function MuseumLocationMap({
       <div className="mt-3 h-[300px] overflow-hidden rounded-lg border border-zinc-200">
         <MapView
           initialViewState={{ longitude, latitude, zoom: 14 }}
-          interactive={false}
-          showNavigationControl={false}
+          isInteractive={false}
+          shouldShowNavigationControl={false}
         >
           {/* 단일 마커 — 빨간 핀 */}
           <Marker longitude={longitude} latitude={latitude} anchor="bottom">

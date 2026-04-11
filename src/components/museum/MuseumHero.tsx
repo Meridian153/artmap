@@ -3,7 +3,7 @@
 
 import type { MuseumDetail } from '@/types/museum'
 
-export interface MuseumHeroProps {
+export type MuseumHeroProps = {
   museum: MuseumDetail
 }
 
