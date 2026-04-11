@@ -7,8 +7,8 @@ import { Map, NavigationControl } from 'react-map-gl/maplibre'
 import type { MapRef, ViewStateChangeEvent } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-// Props 인터페이스
-export interface MapViewProps {
+// Props 타입
+export type MapViewProps = {
   /** 초기 지도 위치. 기본값: 세계 전체 */
   initialViewState?: { longitude: number; latitude: number; zoom: number }
   /** 지도 컨테이너 스타일 */
@@ -19,6 +19,10 @@ export interface MapViewProps {
   className?: string
   /** 지도 이동/줌 이벤트 — viewState 동기화용 */
   onMove?: (evt: ViewStateChangeEvent) => void
+  /** 지도 인터랙션(드래그/줌/회전) 활성화 여부. 기본값 true */
+  isInteractive?: boolean
+  /** 우상단 줌 컨트롤(NavigationControl) 표시 여부. 기본값 true */
+  shouldShowNavigationControl?: boolean
 }
 
 /** OpenFreeMap 타일 스타일 URL */
@@ -32,6 +36,8 @@ export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
     children,
     className,
     onMove,
+    isInteractive = true,
+    shouldShowNavigationControl = true,
   },
   ref
 ) {
@@ -43,9 +49,16 @@ export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
         mapStyle={MAP_STYLE}
         style={{ width: '100%', height: '100%' }}
         onMove={onMove}
+        // isInteractive=false 시 드래그/줌/회전/박스줌/터치 모두 비활성화
+        dragPan={isInteractive}
+        scrollZoom={isInteractive}
+        doubleClickZoom={isInteractive}
+        touchZoomRotate={isInteractive}
+        dragRotate={isInteractive}
+        keyboard={isInteractive}
       >
-        {/* 줌 버튼 */}
-        <NavigationControl position="top-right" />
+        {/* 줌 버튼 — shouldShowNavigationControl이 true일 때만 표시 */}
+        {shouldShowNavigationControl && <NavigationControl position="top-right" />}
         {children}
       </Map>
     </div>

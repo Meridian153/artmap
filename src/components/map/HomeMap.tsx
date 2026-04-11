@@ -3,6 +3,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { MapRef, ViewStateChangeEvent } from 'react-map-gl/maplibre'
 import { MapView } from '@/components/map/MapView'
 import { CountryBubble, COUNTRY_COORDS } from '@/components/map/CountryBubble'
@@ -31,6 +32,9 @@ export function HomeMap() {
 
   // 지도 인스턴스 ref — flyTo 등 명령형 API 사용
   const mapRef = useRef<MapRef>(null)
+
+  // Next.js 라우터 — 미술관 마커 클릭 시 상세 페이지 이동에 사용
+  const router = useRouter()
 
   // 컴포넌트 마운트 시 국가 데이터와 전체 미술관 목록을 병렬 로드
   useEffect(() => {
@@ -79,9 +83,9 @@ export function HomeMap() {
     setSelectedCountryCode(null)
   }
 
-  // 미술관 마커 클릭 핸들러 (향후 상세 페이지 이동으로 교체 예정)
-  function handleMuseumClick(_museum: MuseumSummary) {
-    // TODO: 미술관 상세 페이지로 이동
+  // 미술관 마커 클릭 핸들러 — 해당 미술관 상세 페이지로 이동
+  function handleMuseumClick(museum: MuseumSummary) {
+    router.push(`/museums/${museum.id}`)
   }
 
   // 버블 크기 정규화를 위한 최대 작품 수
