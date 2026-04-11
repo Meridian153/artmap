@@ -1,35 +1,32 @@
 // 미술관 마커 컴포넌트 — 지도 위에 개별 미술관 위치를 아이콘 마커로 표시
 
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Marker } from 'react-map-gl/maplibre'
-import type { MuseumSummary } from '@/types/museum'
+import { useState } from "react";
+import { Marker } from "react-map-gl/maplibre";
+import type { MuseumSummary } from "@/types/museum";
 
 // Props 인터페이스
 export interface MuseumMarkerProps {
   /** 미술관 요약 데이터 */
-  museum: MuseumSummary
+  museum: MuseumSummary;
   /** 클릭 시 콜백 */
-  onClick?: (museum: MuseumSummary) => void
+  onClick?: (museum: MuseumSummary) => void;
   /** 선택된 국가 소속 미술관 강조 여부 */
-  highlighted?: boolean
+  highlighted?: boolean;
 }
 
 // 미술관 마커 컴포넌트
 export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMarkerProps) {
   // 호버 상태 관리
-  const [hovered, setHovered] = useState(false)
+  const [hovered, setHovered] = useState(false);
 
   return (
     <Marker longitude={museum.longitude} latitude={museum.latitude} anchor="bottom">
       <div className="relative flex flex-col items-center">
         {/* 호버 시 미술관 이름 툴팁 */}
         {hovered && (
-          <div
-            className="absolute bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs
-              rounded whitespace-nowrap pointer-events-none z-10 shadow-lg"
-          >
+          <div className="pointer-events-none absolute bottom-full z-10 mb-2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white shadow-lg">
             {museum.name_ko}
             {/* 툴팁 꼬리 */}
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
@@ -43,12 +40,11 @@ export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMar
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           title={museum.name_ko}
-          className={`flex items-center justify-center rounded-full shadow-md cursor-pointer
-            transition-all duration-200 hover:scale-125 hover:shadow-xl
-            ${highlighted
-              ? 'w-12 h-12 bg-amber-50 border-[3px] border-amber-500 hover:border-amber-600'
-              : 'w-8 h-8 bg-white border-2 border-blue-700 hover:border-blue-900'
-            }`}
+          className={`flex cursor-pointer items-center justify-center rounded-full shadow-md transition-all duration-200 hover:scale-125 hover:shadow-xl ${
+            highlighted
+              ? "h-12 w-12 border-[3px] border-amber-500 bg-amber-50 hover:border-amber-600"
+              : "h-8 w-8 border-2 border-blue-700 bg-white hover:border-blue-900"
+          }`}
         >
           {/* 건물 아이콘 SVG (인라인) */}
           <svg
@@ -57,7 +53,7 @@ export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMar
             height="16"
             viewBox="0 0 24 24"
             fill="none"
-            stroke={highlighted ? '#d97706' : '#1d4ed8'}
+            stroke={highlighted ? "#d97706" : "#1d4ed8"}
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -77,5 +73,5 @@ export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMar
         </button>
       </div>
     </Marker>
-  )
+  );
 }

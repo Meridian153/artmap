@@ -43,7 +43,8 @@ export function ArtistCard({ artist, showMuseum = true }: ArtistCardProps) {
 
 - **환경 변수**: `NEXT_PUBLIC_USE_MOCK=true` 이면 Mock 데이터 사용
 - **Mock 데이터 위치**: `src/mocks/`
-- **분기 위치**: API 클라이언트(`src/lib/api.ts`)에서 환경 변수 기준으로 Mock/실제 API 분기
+- **분기 위치**: API 클라이언트(`src/lib/api.ts`)에서 환경 변수 기준으로
+  Mock/실제 API 분기
 - **Mock 구조**: OpenAPI Spec v1.3.0의 스키마와 동일한 구조 유지
 
 ---
@@ -64,43 +65,44 @@ export function ArtistCard({ artist, showMuseum = true }: ArtistCardProps) {
 - **라이브러리**: `react-map-gl/maplibre` (이 import 경로를 정확히 사용할 것)
 - **타일**: OpenFreeMap (API 키 불필요)
 - MapLibre는 브라우저 전용 → 서버 사이드 렌더링 불가
-- 지도 컴포넌트는 반드시 `'use client'` 디렉티브 또는 `dynamic import with { ssr: false }`
+- 지도 컴포넌트는 반드시 `'use client'` 디렉티브 또는
+  `dynamic import with { ssr: false }`
 
 ```tsx
 // ✅ 올바른 방법
-import { Map, Marker } from 'react-map-gl/maplibre'
-import 'maplibre-gl/dist/maplibre-gl.css'
+import { Map, Marker } from "react-map-gl/maplibre";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 // ❌ 잘못된 방법 — Mapbox(유료)로 연결됨
-import { Map, Marker } from 'react-map-gl'
+import { Map, Marker } from "react-map-gl";
 ```
 
 ```tsx
 // SSR 방지 dynamic import 패턴
-import dynamic from 'next/dynamic'
+import dynamic from "next/dynamic";
 
-const ArtMap = dynamic(
-  () => import('@/components/ArtMap'),
-  { ssr: false, loading: () => <div>지도를 불러오는 중...</div> }
-)
+const ArtMap = dynamic(() => import("@/components/ArtMap"), {
+  ssr: false,
+  loading: () => <div>지도를 불러오는 중...</div>,
+});
 ```
 
 ---
 
 ## 파일 경로 규칙
 
-| 파일 유형 | 경로 |
-|---|---|
-| 페이지 | `src/app/{route}/page.tsx` |
-| 레이아웃 | `src/app/{route}/layout.tsx` |
-| 로딩 UI | `src/app/{route}/loading.tsx` |
-| 에러 UI | `src/app/{route}/error.tsx` |
-| 컴포넌트 | `src/components/{ComponentName}.tsx` |
-| 커스텀 훅 | `src/hooks/use{HookName}.ts` |
-| 타입 정의 | `src/types/{domain}.ts` |
-| 유틸 함수 | `src/lib/{utilName}.ts` |
-| API 클라이언트 | `src/lib/api.ts` |
-| Mock 데이터 | `src/mocks/{domain}.ts` |
+| 파일 유형      | 경로                                 |
+| -------------- | ------------------------------------ |
+| 페이지         | `src/app/{route}/page.tsx`           |
+| 레이아웃       | `src/app/{route}/layout.tsx`         |
+| 로딩 UI        | `src/app/{route}/loading.tsx`        |
+| 에러 UI        | `src/app/{route}/error.tsx`          |
+| 컴포넌트       | `src/components/{ComponentName}.tsx` |
+| 커스텀 훅      | `src/hooks/use{HookName}.ts`         |
+| 타입 정의      | `src/types/{domain}.ts`              |
+| 유틸 함수      | `src/lib/{utilName}.ts`              |
+| API 클라이언트 | `src/lib/api.ts`                     |
+| Mock 데이터    | `src/mocks/{domain}.ts`              |
 
 ---
 

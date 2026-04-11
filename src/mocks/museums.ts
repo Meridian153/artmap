@@ -1,6 +1,6 @@
 // Mock 미술관 데이터 — 개발/테스트용 실제 미술관 기반 샘플 데이터
 
-import type { MuseumSummary, MuseumDetail } from '@/types/museum'
+import type { MuseumSummary, MuseumDetail } from "@/types/museum";
 
 /** 미술관 목록 Mock 데이터 */
 export const mockMuseums: MuseumSummary[] = [
@@ -15,7 +15,7 @@ export const mockMuseums: MuseumSummary[] = [
     country_code: 'FR',
     artwork_count: 2,
     thumbnail_url: null,
-    latitude: 48.8600,
+    latitude: 48.86,
     longitude: 2.3266,
   },
   {
@@ -72,7 +72,7 @@ export const mockMuseums: MuseumSummary[] = [
     artwork_count: 2,
     thumbnail_url: null,
     latitude: 37.5797,
-    longitude: 126.9770,
+    longitude: 126.977,
   },
   {
     id: 'museum-006',
@@ -88,7 +88,7 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 43.7678,
     longitude: 11.2553,
   },
-]
+];
 
 /** 미술관 상세 Mock 데이터 (ID별) */
 export const mockMuseumDetail: Record<string, MuseumDetail> = {
@@ -102,7 +102,7 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     artwork_count: 2,
     thumbnail_url: null,
     place: {
-      latitude: 48.8600,
+      latitude: 48.86,
       longitude: 2.3266,
       city_ko: '파리',
       city_en: 'Paris',
@@ -272,4 +272,4 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
       },
     },
   },
-}
+};

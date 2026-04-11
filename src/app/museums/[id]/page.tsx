@@ -12,7 +12,7 @@ import { MuseumLocationMapWrapper } from '@/components/museum/MuseumLocationMapW
 import { MuseumArtworkGallery } from '@/components/museum/MuseumArtworkGallery'
 
 interface MuseumDetailPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 /**
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: MuseumDetailPageProps) {
 
 export default async function MuseumDetailPage({ params }: MuseumDetailPageProps) {
   // Next.js 15+ App Router: params는 Promise로 전달됨
-  const { id } = await params
+  const { id } = await params;
 
   // 미술관 상세 데이터 로딩
   // - Mock 모드: 존재하지 않으면 null 반환 → notFound()
@@ -65,5 +65,5 @@ export default async function MuseumDetailPage({ params }: MuseumDetailPageProps
       />
       <MuseumArtworkGallery museumId={museum.id} />
     </div>
-  )
+  );
 }
