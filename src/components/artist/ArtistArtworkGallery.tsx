@@ -38,7 +38,10 @@ export function ArtistArtworkGallery({ artworks }: ArtistArtworkGalleryProps) {
                   {/* current_museum이 null일 수 있으므로 옵셔널 체이닝 필수 */}
                   {artwork.current_museum?.name_ko && (
                     <p className="mt-1 text-xs text-zinc-600">
-                      {`${artwork.current_museum.name_ko}${artwork.current_museum?.country_ko ?? ""}`}
+                      {artwork.current_museum.name_ko}
+                      {artwork.current_museum.country_ko && (
+                        <>, {artwork.current_museum.country_ko}</>
+                      )}
                     </p>
                   )}
                 </div>

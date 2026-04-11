@@ -94,15 +94,14 @@ export function ArtistCountryMap({ distribution }: ArtistCountryMapProps) {
                 latitude={coords.lat}
                 anchor="center"
               >
-                <button
-                  type="button"
+                <div
                   title={`${item.country_name_ko} (${item.country_name_en})`}
                   aria-label={`${item.country_name_ko} ${item.artwork_count}점`}
                   className="flex items-center justify-center rounded-full bg-blue-500/70 font-semibold text-white"
                   style={{ width: size, height: size, fontSize: size * 0.3 }}
                 >
                   {item.artwork_count}
-                </button>
+                </div>
               </Marker>
             );
           })}
