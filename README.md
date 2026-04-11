@@ -116,7 +116,7 @@ pnpm dev
 해결 방법:
 
 ```bash
-pnpm prettier --write .
+pnpm exec prettier --write .
 git add -A
 git commit
 ```
