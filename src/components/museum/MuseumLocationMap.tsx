@@ -1,37 +1,30 @@
 // 미술관 위치 미니맵 — 미술관 좌표를 중심으로 한 비인터랙티브 지도와 마커
 // MapLibre는 브라우저 전용이므로 클라이언트 컴포넌트.
 
-'use client'
+"use client";
 
-import { Marker } from 'react-map-gl/maplibre'
-import { MapView } from '@/components/map/MapView'
+import { Marker } from "react-map-gl/maplibre";
+import { MapView } from "@/components/map/MapView";
 
 export type MuseumLocationMapProps = {
   /** 미술관 위도 */
-  latitude: number
+  latitude: number;
   /** 미술관 경도 */
-  longitude: number
+  longitude: number;
   /** 미술관 이름 — 마커 title 및 외부 링크 라벨용 */
-  name: string
+  name: string;
   /** 미술관 도로명 주소 (선택) */
-  address?: string | null
-}
+  address?: string | null;
+};
 
 // 미술관 위치를 표시하는 미니맵 컴포넌트
-export function MuseumLocationMap({
-  latitude,
-  longitude,
-  name,
-  address,
-}: MuseumLocationMapProps) {
+export function MuseumLocationMap({ latitude, longitude, name, address }: MuseumLocationMapProps) {
   // Google Maps에서 보기 링크 — 새 탭으로 열림
-  const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`
+  const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
   return (
     <section className="mt-12">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-        위치
-      </h2>
+      <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">위치</h2>
 
       {/* 미니맵 컨테이너 — 비인터랙티브, 줌 컨트롤 숨김 */}
       <div className="mt-3 h-[300px] overflow-hidden rounded-lg border border-zinc-200">
@@ -77,5 +70,5 @@ export function MuseumLocationMap({
         </a>
       </div>
     </section>
-  )
+  );
 }

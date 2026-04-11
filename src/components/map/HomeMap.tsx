@@ -2,15 +2,15 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import type { MapRef, ViewStateChangeEvent } from 'react-map-gl/maplibre'
-import { MapView } from '@/components/map/MapView'
-import { CountryBubble, COUNTRY_COORDS } from '@/components/map/CountryBubble'
-import { MuseumMarker } from '@/components/map/MuseumMarker'
-import { getMapCountries, getMuseums } from '@/lib/api'
-import type { CountryMapData } from '@/types/map'
-import type { MuseumSummary } from '@/types/museum'
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
+import { MapView } from "@/components/map/MapView";
+import { CountryBubble, COUNTRY_COORDS } from "@/components/map/CountryBubble";
+import { MuseumMarker } from "@/components/map/MuseumMarker";
+import { getMapCountries, getMuseums } from "@/lib/api";
+import type { CountryMapData } from "@/types/map";
+import type { MuseumSummary } from "@/types/museum";
 
 /** 줌 레벨 임계값 — 이 값 이상이면 미술관 마커, 미만이면 국가 버블 표시 */
 const MUSEUM_ZOOM_THRESHOLD = 4.5;
@@ -34,7 +34,7 @@ export function HomeMap() {
   const mapRef = useRef<MapRef>(null);
 
   // Next.js 라우터 — 미술관 마커 클릭 시 상세 페이지 이동에 사용
-  const router = useRouter()
+  const router = useRouter();
 
   // 컴포넌트 마운트 시 국가 데이터와 전체 미술관 목록을 병렬 로드
   useEffect(() => {
@@ -82,7 +82,7 @@ export function HomeMap() {
 
   // 미술관 마커 클릭 핸들러 — 해당 미술관 상세 페이지로 이동
   function handleMuseumClick(museum: MuseumSummary) {
-    router.push(`/museums/${museum.id}`)
+    router.push(`/museums/${museum.id}`);
   }
 
   // 버블 크기 정규화를 위한 최대 작품 수

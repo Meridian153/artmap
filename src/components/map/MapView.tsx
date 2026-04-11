@@ -18,12 +18,12 @@ export type MapViewProps = {
   /** 추가 Tailwind 클래스 */
   className?: string;
   /** 지도 이동/줌 이벤트 — viewState 동기화용 */
-  onMove?: (evt: ViewStateChangeEvent) => void
+  onMove?: (evt: ViewStateChangeEvent) => void;
   /** 지도 인터랙션(드래그/줌/회전) 활성화 여부. 기본값 true */
-  isInteractive?: boolean
+  isInteractive?: boolean;
   /** 우상단 줌 컨트롤(NavigationControl) 표시 여부. 기본값 true */
-  shouldShowNavigationControl?: boolean
-}
+  shouldShowNavigationControl?: boolean;
+};
 
 /** OpenFreeMap 타일 스타일 URL */
 const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
