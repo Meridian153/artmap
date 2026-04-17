@@ -9,7 +9,7 @@ export type ArtworkStatus =
   | "unknown";
 
 /** 작품 목록 카드 — 미술관 소장 목록용 (GET /museums/{id}/artworks 응답) */
-export interface ArtworkSummary {
+export type ArtworkSummary = {
   /** 작품 UUID */
   id: string;
   /** 작품명 (한국어) */
@@ -28,10 +28,10 @@ export interface ArtworkSummary {
   status: ArtworkStatus;
   /** 대표 이미지 URL */
   thumbnail_url: string | null;
-}
+};
 
 /** 작품 목록 카드 — 미술관명 포함 (GET /artists/{id}/artworks, GET /artworks 응답) */
-export interface ArtworkSummaryWithMuseum extends ArtworkSummary {
+export type ArtworkSummaryWithMuseum = ArtworkSummary & {
   /** 현재 소장 미술관 정보 */
   current_museum: {
     id: string;
@@ -43,10 +43,10 @@ export interface ArtworkSummaryWithMuseum extends ArtworkSummary {
     country_en: string;
     country_code: string;
   } | null;
-}
+};
 
 /** 작품 상세 정보 (GET /artworks/{id} 응답) */
-export interface ArtworkDetail {
+export type ArtworkDetail = {
   /** 작품 UUID */
   id: string;
   /** 작품명 (한국어) */
@@ -109,4 +109,4 @@ export interface ArtworkDetail {
     start_date: string;
     end_date: string | null;
   } | null;
-}
+};
