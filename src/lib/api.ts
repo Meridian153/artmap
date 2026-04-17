@@ -4,7 +4,11 @@
 import type { CountryMapData } from "@/types/map";
 import type { MuseumSummary, MuseumDetail } from "@/types/museum";
 import type { ArtistSummary, ArtistDetail, ArtistCountryDistribution } from "@/types/artist";
-import type { ArtworkSummary, ArtworkSummaryWithMuseum, ArtworkDetail } from "@/types/artwork";
+import type {
+  ArtworkDetail,
+  ArtworkSummaryWithMuseum,
+  MuseumArtworkSummary,
+} from "@/types/artwork";
 import type { SearchResult } from "@/types/search";
 import type { PaginatedResponse } from "@/types/common";
 import type { ProblemDetail } from "@/types/error";
@@ -23,6 +27,18 @@ const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
 /** 실제 API 기본 경로 */
 const API_BASE = "/api/v1";
+
+function getServerBaseUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicit && explicit.length > 0) return explicit;
+
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl && vercelUrl.length > 0) return `https://${vercelUrl}`;
+
+  throw new Error(
+    "Server-side fetch requires an absolute URL. Set NEXT_PUBLIC_SITE_URL (e.g. http://localhost:3000) in your environment.",
+  );
+}
 
 // ─── 공통 fetch 헬퍼 ─────────────────────────────────────────────────────────
 
@@ -45,7 +61,8 @@ function buildSearchParams(params?: object): string {
  * - 정상 응답은 JSON 파싱 후 T 타입으로 반환
  */
 async function fetchApi<T>(endpoint: string, params?: object): Promise<T> {
-  const url = `${API_BASE}${endpoint}${buildSearchParams(params)}`;
+  const path = `${API_BASE}${endpoint}${buildSearchParams(params)}`;
+  const url = typeof window === "undefined" ? new URL(path, getServerBaseUrl()).toString() : path;
   const response = await fetch(url);
 
   // 에러 응답 처리
@@ -150,7 +167,7 @@ export interface GetMuseumArtworksParams {
 export async function getMuseumArtworks(
   id: string,
   params?: GetMuseumArtworksParams,
-): Promise<{ data: ArtworkSummary[]; total: number }> {
+): Promise<{ data: MuseumArtworkSummary[]; total: number }> {
   if (USE_MOCK) {
     // current_museum.id가 일치하는 작품만 필터링
     const filtered = mockArtworks.filter((aw) => aw.current_museum?.id === id);
@@ -160,7 +177,10 @@ export async function getMuseumArtworks(
     const paged = paginate(filtered, params?.page, params?.per_page);
     return { data: paged.data, total: paged.total };
   }
-  return fetchApi<{ data: ArtworkSummary[]; total: number }>(`/museums/${id}/artworks`, params);
+  return fetchApi<{ data: MuseumArtworkSummary[]; total: number }>(
+    `/museums/${id}/artworks`,
+    params,
+  );
 }
 
 // ─── 화가 API ────────────────────────────────────────────────────────────────
