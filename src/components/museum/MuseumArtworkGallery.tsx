@@ -31,7 +31,9 @@ export async function MuseumArtworkGallery({ museumId }: MuseumArtworkGalleryPro
                   <p className="text-sm font-medium text-zinc-900 group-hover:underline">
                     {artwork.title_ko}
                   </p>
-                  <p className="mt-1 text-xs text-zinc-600">{artwork.artist.name_ko}</p>
+                  <p className="mt-1 text-xs text-zinc-600">
+                    {artwork.artist?.name_ko ?? artwork.artist?.name_en ?? "작가 정보 없음"}
+                  </p>
                   {artwork.year_label && (
                     <p className="text-xs text-zinc-500">{artwork.year_label}</p>
                   )}
