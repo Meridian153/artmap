@@ -60,8 +60,8 @@ export async function GET(
         p.country,
         p.city,
         p.address,
-        p.latitude,
-        p.longitude,
+        p.latitude::float,
+        p.longitude::float,
         p.opening_hours,
         p.admission
       FROM institutions i

@@ -109,7 +109,7 @@ export async function GET(
     const base = baseResult.rows[0];
 
     // ── 2. 원소장처(primary_museum) 조회 ──────────────────────────────────
-    // is_primary_owner=true 복수 행 시: created_at 가장 오래된 1건 선택
+    // is_primary_owner=true 복수 행 시: 안정적인 결과를 위해 institution_id ASC 기준 1건 선택
     const primaryResult = await pool.query<PrimaryMuseumRow>(
       `
       SELECT
@@ -118,8 +118,8 @@ export async function GET(
         i.name_en,
         p.city,
         i.country_code,
-        p.latitude,
-        p.longitude,
+        p.latitude::float,
+        p.longitude::float,
         COUNT(*) OVER() AS row_count
       FROM artwork_ownerships ao
       JOIN institutions i ON i.id             = ao.institution_id
@@ -135,7 +135,7 @@ export async function GET(
     if (primaryResult.rows.length > 0 && Number(primaryResult.rows[0].row_count) > 1) {
       console.warn(
         `[WARN] artwork ${id}: artwork_ownerships에 is_primary_owner=true 행이 복수 존재합니다. ` +
-          `최초 등록(created_at ASC) 1건만 반환합니다.`,
+          `institution_id ASC 기준 1건만 반환합니다.`,
       );
     }
 
@@ -149,8 +149,8 @@ export async function GET(
         i.name_en   AS museum_name_en,
         p.city,
         i.country_code,
-        p.latitude,
-        p.longitude,
+        p.latitude::float,
+        p.longitude::float,
         al.start_date,
         al.end_date,
         COUNT(*) OVER() AS row_count

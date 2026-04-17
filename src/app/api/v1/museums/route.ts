@@ -50,8 +50,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           i.institution_type,
           i.country_code,
           p.city,
-          p.latitude,
-          p.longitude,
+          p.latitude::float,
+          p.longitude::float,
           COUNT(ao.artwork_id)::integer AS artwork_count
         FROM institutions i
         JOIN places p              ON p.institution_id = i.id
