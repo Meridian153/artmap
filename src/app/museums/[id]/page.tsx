@@ -44,7 +44,7 @@ export default async function MuseumDetailPage({ params }: MuseumDetailPageProps
   try {
     museum = await getMuseumById(id);
   } catch (error) {
-    if (error instanceof ApiError) {
+    if (error instanceof ApiError && error.status === 404) {
       notFound();
     }
     throw error;

@@ -36,7 +36,7 @@ export default async function ArtworkDetailPage({ params }: ArtworkDetailPagePro
   try {
     artwork = await getArtworkById(id);
   } catch (error) {
-    if (error instanceof ApiError) {
+    if (error instanceof ApiError && error.status === 404) {
       notFound();
     }
     throw error;

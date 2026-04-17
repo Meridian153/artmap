@@ -55,7 +55,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
   //    - ApiError(404 등) → notFound()로 fallthrough
   //    - 그 외 에러 → 그대로 throw해서 가까운 error.tsx로 bubble up
   if (artistResult.status === "rejected") {
-    if (artistResult.reason instanceof ApiError) {
+    if (artistResult.reason instanceof ApiError && artistResult.reason.status === 404) {
       notFound();
     }
     throw artistResult.reason;
