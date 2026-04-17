@@ -105,8 +105,8 @@ export async function GET(
       id: row.id,
       title_ko: row.title_ko,
       title_en: row.title_en,
-      year_created: row.year_created,
-      image_url: row.image_url,
+      year_label: row.year_created !== null ? String(row.year_created) : null,
+      thumbnail_url: row.image_url,
       status: row.status,
       artist:
         row.artist_id !== null

@@ -8,6 +8,20 @@ export type ArtworkStatus =
   | "under_restoration"
   | "unknown";
 
+export type MuseumArtworkSummary = {
+  id: string;
+  title_ko: string;
+  title_en: string;
+  year_label: string | null;
+  artist: {
+    id: string;
+    name_ko: string | null;
+    name_en: string | null;
+  } | null;
+  status: ArtworkStatus;
+  thumbnail_url: string | null;
+};
+
 /** 작품 목록 카드 — 미술관 소장 목록용 (GET /museums/{id}/artworks 응답) */
 export type ArtworkSummary = {
   /** 작품 UUID */
