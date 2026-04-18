@@ -6,7 +6,8 @@ import { mockArtists } from "./artists";
 import { mockArtworks, mockArtworkDetail } from "./artworks";
 import { mockMuseums } from "./museums";
 
-const DEFAULT_PER_PAGE = 20;
+// 실제 API Route(route.ts)의 기본값과 동일: parseIntParam(limitParam, 5, 1, 20)
+const DEFAULT_LIMIT = 5;
 
 type MockSearchOptions = {
   type?: string;
@@ -18,15 +19,22 @@ type MockSearchOptions = {
 
 /** 검색어로 필터링된 통합 검색 결과 반환 */
 export function mockSearchResults(query: string, options?: MockSearchOptions): SearchResult {
-  const resolvedPage = options?.page ?? 1;
-  const resolvedPerPage = options?.per_page ?? DEFAULT_PER_PAGE;
+  // 실제 API Route와 동일한 분기 로직
+  // - page가 있으면 페이지네이션 모드: per_page 사용, limit 무시
+  // - page가 없으면 자동완성 모드: limit 사용 (기본 5)
+  const isPaginated = options?.page !== undefined;
+  const page = options?.page ?? 1;
+  const perPage = options?.per_page ?? DEFAULT_LIMIT;
+  const autocompleteLimit = isPaginated ? perPage : (options?.limit ?? DEFAULT_LIMIT);
+  // 응답 per_page: 실제 API의 `isPaginated ? perPage : autocompleteLimit`와 동일
+  const responsePerPage = isPaginated ? perPage : autocompleteLimit;
 
-  // 검색어가 없으면 빈 결과 반환 (페이지/총계는 0/0/0)
+  // 검색어가 없으면 빈 결과 반환
   if (!query.trim()) {
     return {
       query,
-      page: resolvedPage,
-      per_page: resolvedPerPage,
+      page,
+      per_page: responsePerPage,
       artists_total: 0,
       artworks_total: 0,
       museums_total: 0,
@@ -100,16 +108,15 @@ export function mockSearchResults(query: string, options?: MockSearchOptions): S
           }))
       : [];
 
-  // limit이 지정된 경우 각 카테고리 반환 수를 제한 (자동완성 모드)
-  const cap = options?.limit;
-  const artists = cap !== undefined ? allArtists.slice(0, cap) : allArtists;
-  const artworks = cap !== undefined ? allArtworks.slice(0, cap) : allArtworks;
-  const museums = cap !== undefined ? allMuseums.slice(0, cap) : allMuseums;
+  // autocompleteLimit으로 카테고리별 반환 수 제한 (모드에 무관하게 항상 적용)
+  const artists = allArtists.slice(0, autocompleteLimit);
+  const artworks = allArtworks.slice(0, autocompleteLimit);
+  const museums = allMuseums.slice(0, autocompleteLimit);
 
   return {
     query,
-    page: resolvedPage,
-    per_page: resolvedPerPage,
+    page,
+    per_page: responsePerPage,
     artists_total: allArtists.length,
     artworks_total: allArtworks.length,
     museums_total: allMuseums.length,
