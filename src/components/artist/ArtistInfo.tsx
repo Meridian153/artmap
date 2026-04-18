@@ -21,11 +21,11 @@ export function ArtistInfo({ artist }: ArtistInfoProps) {
       )}
 
       {/* 사조 — movements 배열을 리스트로 렌더 */}
-      {artist.movements.length > 0 && (
+      {(artist.movements?.length ?? 0) > 0 && (
         <section className="rounded-lg border border-zinc-200 p-6">
           <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">사조</h2>
           <ul className="mt-3 space-y-1 text-zinc-800">
-            {artist.movements.map((m) => (
+            {artist.movements?.map((m) => (
               <li key={`${m.name_en}-${m.period_start ?? "x"}`}>
                 {m.name_ko}
                 <span className="ml-2 text-sm text-zinc-500">({m.name_en})</span>

@@ -125,11 +125,11 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
                       href={`/museums/${artwork.current_location.museum_id}`}
                       className="text-zinc-900 underline-offset-2 hover:underline"
                     >
-                      {artwork.current_location.museum_name_ko ?? "이름 정보 없음"}
+                      {artwork.current_location?.museum_name_ko ?? "이름 정보 없음"}
                     </Link>
                   ) : (
                     <span className="text-zinc-900">
-                      {artwork.current_location.museum_name_ko ?? "이름 정보 없음"}
+                      {artwork.current_location?.museum_name_ko ?? "이름 정보 없음"}
                     </span>
                   )}
                 </div>
