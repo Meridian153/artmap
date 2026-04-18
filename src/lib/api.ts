@@ -60,11 +60,12 @@ function buildSearchParams(params?: object): string {
  * 실제 API 엔드포인트에 fetch 요청을 보내는 헬퍼
  * - RFC 9457 에러 응답(application/problem+json)을 ApiError로 변환
  * - 정상 응답은 JSON 파싱 후 T 타입으로 반환
+ * - signal을 전달하면 요청 취소 가능 (자동완성 등 경쟁 요청 방지)
  */
-async function fetchApi<T>(endpoint: string, params?: object): Promise<T> {
+async function fetchApi<T>(endpoint: string, params?: object, signal?: AbortSignal): Promise<T> {
   const path = `${API_BASE}${endpoint}${buildSearchParams(params)}`;
   const url = typeof window === "undefined" ? new URL(path, getServerBaseUrl()).toString() : path;
-  const response = await fetch(url);
+  const response = await fetch(url, signal !== undefined ? { signal } : undefined);
 
   // 에러 응답 처리
   if (!response.ok) {
@@ -339,20 +340,28 @@ export async function getArtworkById(id: string): Promise<ArtworkDetail | null> 
 
 // ─── 검색 API ────────────────────────────────────────────────────────────────
 
-export interface SearchParams {
+// interface → type 변환: styleguide §3-2 준수
+export type SearchParams = {
   q: string;
   type?: string;
+  /** 자동완성 모드 카테고리별 최대 반환 수 (1–20, 기본 5). page와 함께 사용하지 않는다. */
+  limit?: number;
   page?: number;
   per_page?: number;
-}
+};
 
 /**
  * 통합 검색
  * GET /api/v1/search
  */
-export async function search(params: SearchParams): Promise<SearchResult> {
+export async function search(params: SearchParams, signal?: AbortSignal): Promise<SearchResult> {
   if (USE_MOCK) {
-    return mockSearchResults(params.q);
+    return mockSearchResults(params.q, {
+      type: params.type,
+      limit: params.limit,
+      page: params.page,
+      per_page: params.per_page,
+    });
   }
-  return fetchApi<SearchResult>("/search", params);
+  return fetchApi<SearchResult>("/search", params, signal);
 }
