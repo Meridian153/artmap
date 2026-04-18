@@ -9,7 +9,17 @@ import { mockMuseums } from "./museums";
 export function mockSearchResults(query: string): SearchResult {
   // 검색어가 없으면 빈 결과 반환
   if (!query.trim()) {
-    return { query, artists: [], artworks: [], museums: [] };
+    return {
+      query,
+      page: 1,
+      per_page: 5,
+      artists_total: 0,
+      artworks_total: 0,
+      museums_total: 0,
+      artists: [],
+      artworks: [],
+      museums: [],
+    };
   }
 
   const q = query.toLowerCase();
@@ -41,7 +51,7 @@ export function mockSearchResults(query: string): SearchResult {
       title_en: aw.title_en,
       artist_name_ko: aw.artist.name_ko,
       artist_name_en: aw.artist.name_en,
-      thumbnail_url: aw.thumbnail_url,
+      image_url: aw.thumbnail_url,
     }));
 
   // 미술관명(한/영) 및 도시명 필터링
@@ -61,8 +71,19 @@ export function mockSearchResults(query: string): SearchResult {
       city_en: m.city_en,
       country_ko: m.country_ko,
       country_en: m.country_en,
+      country_code: m.country_code,
       thumbnail_url: m.thumbnail_url,
     }));
 
-  return { query, artists, artworks, museums };
+  return {
+    query,
+    page: 1,
+    per_page: 5,
+    artists_total: artists.length,
+    artworks_total: artworks.length,
+    museums_total: museums.length,
+    artists,
+    artworks,
+    museums,
+  };
 }

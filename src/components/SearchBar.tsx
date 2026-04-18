@@ -1,9 +1,9 @@
 // 검색바 컴포넌트 — 화가, 작품, 미술관 통합 검색 UI (현재는 껍데기)
 
-// Props 인터페이스
-export interface SearchBarProps {
+// Props 타입
+export type SearchBarProps = {
   className?: string;
-}
+};
 
 // 검색바 UI 컴포넌트 (실제 검색 기능은 추후 구현)
 export function SearchBar({ className = "" }: SearchBarProps) {
