@@ -6,7 +6,7 @@
 import { Marker } from "react-map-gl/maplibre";
 import { MapView } from "@/components/map/MapView";
 import { COUNTRY_COORDS } from "@/components/map/CountryBubble";
-import type { ArtistCountryDistribution } from "@/types/artist";
+import type { ArtistCountryDistribution } from "@/types/map";
 
 export type ArtistCountryMapProps = {
   /** 화가 작품의 국가별 분포 (Wrapper에서 null/empty 분기 처리됨) */

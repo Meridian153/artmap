@@ -2,6 +2,7 @@
 // 서버 컴포넌트. 차분한 미술관 톤(흰 배경, 검정 텍스트, 넉넉한 여백).
 
 import type { MuseumDetail } from "@/types/museum";
+import { getCountryName } from "@/lib/country-names";
 
 export type MuseumHeroProps = {
   museum: MuseumDetail;
@@ -9,6 +10,8 @@ export type MuseumHeroProps = {
 
 export function MuseumHero({ museum }: MuseumHeroProps) {
   const { place } = museum;
+  // 국가명은 country_code → 한국어 매핑. 매핑이 없으면 코드 그대로 노출됨
+  const countryName = getCountryName(museum.country_code, "ko");
 
   return (
     <header className="border-b border-zinc-200 pb-8">
@@ -25,7 +28,7 @@ export function MuseumHero({ museum }: MuseumHeroProps) {
         <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">{museum.name_ko}</h1>
         <p className="mt-2 text-lg text-zinc-500 italic">{museum.name_en}</p>
         <p className="mt-4 text-base text-zinc-700">
-          {place.city_ko}, {place.country_ko}
+          {place.city}, {countryName}
         </p>
       </div>
     </header>

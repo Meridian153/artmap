@@ -5,7 +5,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { ArtistCountryDistribution } from "@/types/artist";
+import type { ArtistCountryDistribution } from "@/types/map";
 
 // ArtistCountryMap을 SSR 없이 동적 로드. 로딩 중에는 동일한 크기의 placeholder.
 const ArtistCountryMap = dynamic(

@@ -14,7 +14,7 @@ import { ArtistInfo } from "@/components/artist/ArtistInfo";
 import { ArtistArtworkGallery } from "@/components/artist/ArtistArtworkGallery";
 import { ArtistCountryMapWrapper } from "@/components/artist/ArtistCountryMapWrapper";
 import type { ArtworkSummaryWithMuseum } from "@/types/artwork";
-import type { ArtistCountryDistribution } from "@/types/artist";
+import type { ArtistCountryDistribution } from "@/types/map";
 
 const MAX_GALLERY_ITEMS = 12;
 
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: ArtistDetailPageProps): Promi
     if (!artist) return { title: "Artist Not Found - ArtMap" };
     return {
       title: `${artist.name_ko} - ArtMap`,
-      description: artist.biography_ko ?? undefined,
+      description: artist.bio_ko ?? undefined,
     };
   } catch {
     return { title: "Artist Not Found - ArtMap" };

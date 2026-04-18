@@ -27,7 +27,7 @@ export function ArtistHero({ artist }: ArtistHeroProps) {
         <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">{artist.name_ko}</h1>
         <p className="mt-2 text-lg text-zinc-500 italic">{artist.name_en}</p>
         <p className="mt-4 text-base text-zinc-700">
-          {artist.nationality_ko}
+          {artist.nationality ?? ""}
           {lifeSpan && <span className="ml-2 text-zinc-500">({lifeSpan})</span>}
         </p>
       </div>

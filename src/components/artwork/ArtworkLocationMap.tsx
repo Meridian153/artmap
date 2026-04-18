@@ -67,25 +67,28 @@ export function ArtworkLocationMap({
             </div>
           </Marker>
 
-          {/* 파란 마커 — 현재 전시처 (on_loan일 때만) */}
-          {isOnLoan && currentLocation && (
-            <Marker
-              longitude={currentLocation.longitude}
-              latitude={currentLocation.latitude}
-              anchor="bottom"
-            >
-              <div
-                title={`현재 전시: ${currentLocation.museum_name_ko}`}
-                className="flex flex-col items-center"
+          {/* 파란 마커 — 현재 전시처 (on_loan + 좌표/이름 모두 존재할 때만) */}
+          {isOnLoan &&
+            currentLocation &&
+            currentLocation.latitude !== null &&
+            currentLocation.longitude !== null && (
+              <Marker
+                longitude={currentLocation.longitude}
+                latitude={currentLocation.latitude}
+                anchor="bottom"
               >
-                <PinIcon
-                  fill="#3b82f6"
-                  stroke="#1e40af"
-                  label={`현재 전시: ${currentLocation.museum_name_ko}`}
-                />
-              </div>
-            </Marker>
-          )}
+                <div
+                  title={`현재 전시: ${currentLocation.museum_name_ko ?? ""}`}
+                  className="flex flex-col items-center"
+                >
+                  <PinIcon
+                    fill="#3b82f6"
+                    stroke="#1e40af"
+                    label={`현재 전시: ${currentLocation.museum_name_ko ?? ""}`}
+                  />
+                </div>
+              </Marker>
+            )}
         </MapView>
       </div>
     </section>
