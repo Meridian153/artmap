@@ -1,0 +1,1806 @@
+openapi: 3.0.3
+
+# ============================================================
+# ArtMap API 명세서 — 통합 파일
+# ------------------------------------------------------------
+# 설명   : 전 세계 미술 작품 위치 탐색 서비스 ArtMap 백엔드 API 명세서
+# 버전   : 1.3.0
+# 작성일 : 2026-03-21
+# 수정일 : 2026-03-22
+# ERD    : 최종 확정본 기준
+# 에러   : RFC 9457 (Problem Details for HTTP APIs) 전체 적용
+# 포함   : 11개 엔드포인트 (MVP P0 기준)
+# ------------------------------------------------------------
+# [변경 이력 v1.3.0]
+#
+# [G] GET /artworks (신규 추가)
+#   - 작품 목록 조회 엔드포인트 추가
+#   - 이유: IA 문서에 /artworks 페이지가 존재하나 해당 페이지를 렌더링할
+#     목록 API가 누락되어 있었습니다. 작품 500점을 탐색할 방법이 없었으며,
+#     검색 결과의 "작품 더 보기" 흐름도 연결할 엔드포인트가 없었습니다.
+#     artist_id / movement / status 필터와 페이지네이션을 지원합니다.
+#
+# ============================================================
+# [변경 이력 v1.2.0]
+#
+# [A] GET /map/countries
+#   - 응답 헤더에 Cache-Control 명세 추가
+#   - 이유: 이 API는 홈 접속마다 호출되는 가장 빈번한 엔드포인트입니다.
+#     국가별 작품 수는 실시간으로 변하지 않으므로, 1시간 단위 캐싱으로
+#     DB 집계 쿼리 실행 횟수를 대폭 줄일 수 있습니다.
+#     백엔드에서 Redis 캐싱과 함께 적용해야 합니다.
+#
+# [C] GET /artists/{id} (description 보강)
+#   - 화가 상세 페이지 진입 시 3개 API 병렬 호출 가이드 명시
+#   - 이유: 순차 호출 시 응답 시간이 누적됩니다 (예: 각 200ms → 총 600ms).
+#     병렬 호출(Promise.all)로 구현하면 가장 느린 응답 시간(200ms)만
+#     기다리면 됩니다. 프론트엔드 개발자가 이를 인지하고 구현해야 합니다.
+#
+# [D] GET /search
+#   - page, per_page 파라미터 추가
+#   - 이유: v1.1.0에서 artists_total/artworks_total/museums_total을 추가했으나
+#     실제로 추가 결과를 불러올 방법이 없었습니다.
+#     "화가 N명 더 보기" 버튼이 동작하려면 페이지네이션이 필요합니다.
+#
+# [E] ArtworkDetail 스키마 — current_location
+#   - museum_id 필드 추가
+#   - 이유: 대여 중인 작품의 현재 전시처를 표시할 때, 미술관 이름만 있고
+#     ID가 없으면 해당 미술관 상세 페이지(/museums/{id})로 이동이 불가합니다.
+#     ArtMap USP인 "대여 중 작품 추적 → 해당 미술관 탐색" 흐름이 끊깁니다.
+#
+# [F] GET /artworks/{id} — Partial Unique Index
+#   - "권장" → "필수 적용 사항"으로 강도 상향
+#   - 이유: 권고 수준이면 적용되지 않을 수 있습니다. 미적용 시 데이터 오염이
+#     발생해도 API 레벨 예외 처리(최신 1건 선택)가 정상 경로가 됩니다.
+#     DB 레벨에서 원천 차단하는 것이 가장 안전합니다.
+#
+# [I] 공통 — 429 Too Many Requests 응답 추가
+#   - components/responses에 TooManyRequests 추가
+#   - GET /search에 429 응답 적용
+#   - 이유: 검색 API는 자동완성 용도로 매우 빈번하게 호출됩니다.
+#     Rate Limiting 없이는 단일 사용자 또는 봇이 서버를 마비시킬 수 있습니다.
+#     PRD 비기능 요구사항에도 "Rate Limiting 적용"이 명시되어 있습니다.
+#     백엔드에서 구체적인 제한 기준(예: IP당 60회/분)을 설정해야 합니다.
+# ============================================================
+
+info:
+  title: ArtMap API
+  version: 1.3.0
+  description: |
+    전 세계 미술 작품의 소장 위치를 지도 기반으로 탐색하는
+    서비스 ArtMap의 백엔드 API 명세서입니다.
+
+    [MVP 포함 기능]
+    - F-001: 통합 검색
+    - F-002: 지도 기반 탐색
+    - F-003: 화가 상세 페이지
+    - F-004: 작품 상세 페이지
+    - F-005: 미술관 상세 페이지
+
+    [에러 응답]
+    모든 에러 응답은 RFC 9457 (Problem Details for HTTP APIs) 표준을 따릅니다.
+    Content-Type: application/problem+json
+
+    [v1.3.0 주요 변경사항]
+    - GET /artworks 목록 엔드포인트 신규 추가 (artist_id/movement/status 필터 지원)
+
+    [v1.2.0 주요 변경사항]
+    - /map/countries 캐싱 헤더 명세 추가 (백엔드 Redis 캐싱 연동 필요)
+    - /search 페이지네이션 파라미터 추가 (더 보기 기능 지원)
+    - ArtworkDetail.current_location에 museum_id 추가
+    - /artworks/{id} Partial Unique Index 필수 적용으로 강화
+    - 429 Rate Limit 응답 전역 정의 추가
+    - 화가 상세 페이지 병렬 호출 가이드 명세서 반영
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: 로컬 개발 서버
+  - url: https://api.artmap.com/v1
+    description: 프로덕션 서버 (추후 확정)
+
+tags:
+  - name: Map
+    description: 지도 관련 API (F-002)
+  - name: Museums
+    description: 미술관 관련 API (F-005)
+  - name: Artists
+    description: 화가 관련 API (F-003)
+  - name: Artworks
+    description: 작품 관련 API (F-004)
+  - name: Search
+    description: 통합 검색 API (F-001)
+
+# ============================================================
+# 엔드포인트 정의
+# ============================================================
+paths:
+
+  # ----------------------------------------------------------
+  # 01. GET /map/countries
+  # 홈 지도 초기 로딩 — 국가별 버블 마커 데이터
+  # F-002
+  # [UPDATED v1.2.0] 응답 헤더에 Cache-Control 추가
+  # ----------------------------------------------------------
+  /map/countries:
+    get:
+      summary: 국가별 작품 수 집계 데이터 조회
+      operationId: getMapCountries
+      tags:
+        - Map
+      description: |
+        홈 화면 지도의 국가 버블 마커 렌더링에 필요한
+        국가별 집계 데이터를 배열로 반환합니다.
+
+        [PRD] F-002 — 초기 로딩 시 국가별 버블 마커 표시. 버블 크기 = 작품 수 비례.
+
+        [ERD 흐름]
+        institutions.country_code → artwork_ownerships → COUNT(artwork_id)
+        places.latitude / longitude (국가 대표 좌표)
+
+        [설계 결정]
+        - countries 테이블 미추가 확정. institutions.country_code GROUP BY 기준.
+        - country_name 은 ERD 직접 대응 없음. 백엔드 변환 처리.
+
+        [UPDATED v1.2.0 — 캐싱 정책]
+        이 API는 홈 접속 시마다 호출되는 가장 빈번한 엔드포인트입니다.
+        국가별 작품 수는 실시간 변경이 없으므로 캐싱이 필수입니다.
+        백엔드 구현 시 아래를 반드시 적용해야 합니다.
+
+        캐싱 전략:
+        1. Redis에 집계 결과를 3600초(1시간) 동안 저장합니다.
+        2. 응답 헤더에 Cache-Control을 포함하여 CDN/브라우저 캐싱도 활용합니다.
+        3. 데이터 배치 갱신 후에는 Redis 키를 수동으로 무효화합니다.
+
+        공동 소장 작품 집계 기준:
+        - 공동 소장(artwork_ownerships에 동일 artwork_id로 복수 기관이 등록된 경우)
+          작품은 각 기관의 country_code 기준으로 각각 1건씩 집계합니다.
+        - 이로 인해 전체 국가별 합산이 실제 작품 수보다 클 수 있습니다.
+        - 향후 ownership_share를 기반으로 가중 집계로 개선할 수 있습니다.
+      parameters: []
+      responses:
+        "200":
+          description: 성공. 국가별 집계 데이터 배열 반환.
+          # [UPDATED v1.2.0] Cache-Control 헤더 추가
+          headers:
+            Cache-Control:
+              description: |
+                캐싱 지시자. public = CDN 캐싱 허용, max-age = 캐시 유효 시간(초).
+                1시간(3600초) 캐싱을 기본으로 합니다.
+                백엔드에서 Redis 캐싱과 함께 적용해야 합니다.
+              schema:
+                type: string
+                example: "public, max-age=3600"
+            ETag:
+              description: |
+                응답 데이터의 해시값. 클라이언트가 If-None-Match 헤더로 재검증 시
+                데이터가 변경되지 않았으면 304 Not Modified를 반환합니다.
+                불필요한 데이터 전송을 줄입니다.
+              schema:
+                type: string
+                example: '"a3f8b2c1d4e5"'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CountryMapData"
+              example:
+                - country_code: "FR"
+                  country_name_ko: "프랑스"
+                  country_name_en: "France"
+                  artwork_count: 847
+                  latitude: 46.2276
+                  longitude: 2.2137
+                - country_code: "US"
+                  country_name_ko: "미국"
+                  country_name_en: "United States"
+                  artwork_count: 623
+                  latitude: 37.0902
+                  longitude: -95.7129
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 02. GET /museums
+  # 미술관 목록 — 지도 국가 클릭 / 미술관 목록 페이지 겸용
+  # F-002, F-005
+  # ----------------------------------------------------------
+  /museums:
+    get:
+      summary: 미술관 목록 조회
+      operationId: getMuseums
+      tags:
+        - Museums
+      description: |
+        미술관 목록을 반환합니다.
+        country 파라미터 유무에 따라 지도 필터와 전체 목록 두 용도로 사용됩니다.
+
+        [PRD] F-002 (국가 클릭 시 미술관 마커), F-005 (미술관 목록 페이지)
+
+        [ERD 흐름]
+        institutions + places (institution_id 조인)
+        country 필터: institutions.country_code 기준
+      parameters:
+        - name: country
+          in: query
+          required: false
+          description: "국가 코드 필터 (ISO 3166-1 alpha-2). ERD: institutions.country_code"
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 2
+          example: "FR"
+        - name: city
+          in: query
+          required: false
+          description: "도시명 필터. ERD: places.city"
+          schema:
+            type: string
+          example: "Paris"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: 성공. 미술관 목록 반환.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MuseumSummary"
+                  total:
+                    type: integer
+                    example: 30
+                  page:
+                    type: integer
+                    example: 1
+                  per_page:
+                    type: integer
+                    example: 20
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 03. GET /museums/{id}
+  # 미술관 상세
+  # F-005
+  # ----------------------------------------------------------
+  /museums/{id}:
+    get:
+      summary: 미술관 상세 정보 조회
+      operationId: getMuseumById
+      tags:
+        - Museums
+      description: |
+        특정 미술관의 상세 정보를 반환합니다.
+
+        [PRD] F-005 — 미술관명, 위치, 운영시간, 입장료, 웹사이트
+
+        [ERD 흐름]
+        institutions + places (institution_id 조인)
+        opening_hours: places.opening_hours (최종 확정)
+        admission: places.admission
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "미술관 고유 ID. ERD: institutions.id"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 성공. 미술관 상세 정보 반환.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MuseumDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 04. GET /museums/{id}/artworks
+  # 미술관 소장 작품 목록
+  # F-005
+  # [v1.1.0] limit/page 우선순위 규칙 추가
+  # ----------------------------------------------------------
+  /museums/{id}/artworks:
+    get:
+      summary: 미술관 소장 작품 목록 조회
+      operationId: getMuseumArtworks
+      tags:
+        - Museums
+      description: |
+        특정 미술관의 소장 작품 목록을 반환합니다.
+        limit=5 로 사이드패널 미리보기, 페이지네이션으로 전체 목록에 사용됩니다.
+
+        [PRD] F-005 (소장 작품 갤러리), F-002 (사이드패널 미리보기)
+
+        [ERD 흐름]
+        artwork_ownerships.institution_id = {id} → artworks → artwork_artists → artists
+
+        [limit/page 우선순위 규칙 — v1.1.0]
+        1) limit 파라미터가 존재하는 경우:
+           - page, per_page는 무시합니다.
+           - 전체 결과 중 artworks.year_created DESC 정렬 기준 상위 limit개를 반환합니다.
+           - 주 사용처: 사이드패널 미리보기 (?limit=5)
+
+        2) limit 파라미터가 없는 경우:
+           - page, per_page 기준으로 페이지네이션을 적용합니다.
+           - 주 사용처: 미술관 상세 페이지 전체 목록 (?page=1&per_page=20)
+
+        3) limit과 page/per_page를 동시에 전달한 경우:
+           - limit만 적용하고 page/per_page는 무시합니다.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "미술관 고유 ID. ERD: institutions.id"
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          description: |
+            최대 반환 수. 사이드패널 미리보기 시 5 사용.
+            이 파라미터가 존재하면 page/per_page는 무시됩니다.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: page
+          in: query
+          required: false
+          description: "limit이 없을 때만 유효합니다. 기본값 1."
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          description: "limit이 없을 때만 유효합니다. 기본값 20."
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: 성공. 소장 작품 목록 반환.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ArtworkSummary"
+                  total:
+                    type: integer
+                    example: 312
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 05. GET /artists
+  # 화가 목록
+  # F-003
+  # ----------------------------------------------------------
+  /artists:
+    get:
+      summary: 화가 목록 조회
+      operationId: getArtists
+      tags:
+        - Artists
+      description: |
+        화가 목록을 반환합니다.
+
+        [PRD] F-003 — 화가 카드 그리드 (사진, 이름, 화풍, 생몰년)
+
+        [ERD 흐름]
+        artists + art_movements (artist_movements 경유)
+      parameters:
+        - name: movement
+          in: query
+          required: false
+          description: "화풍 필터. ERD: art_movements.name_en"
+          schema:
+            type: string
+        - name: nationality
+          in: query
+          required: false
+          description: "국적 필터. ERD: artists.nationality"
+          schema:
+            type: string
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - name_asc
+              - birth_year_asc
+              - artwork_count_desc
+            default: name_asc
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: 성공. 화가 목록 반환.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ArtistSummary"
+                  total:
+                    type: integer
+                    example: 50
+                  page:
+                    type: integer
+                    example: 1
+                  per_page:
+                    type: integer
+                    example: 20
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 06. GET /artists/{id}
+  # 화가 상세
+  # F-003
+  # [UPDATED v1.2.0] 병렬 호출 가이드 추가
+  # ----------------------------------------------------------
+  /artists/{id}:
+    get:
+      summary: 화가 상세 정보 조회
+      operationId: getArtistById
+      tags:
+        - Artists
+      description: |
+        특정 화가의 상세 정보를 반환합니다.
+
+        [PRD] F-003 — 이름, 생몰년, 국적, 약력, 화풍
+
+        [ERD 흐름]
+        artists + art_movements (artist_movements 경유)
+
+        [UPDATED v1.2.0 — 병렬 호출 가이드]
+        화가 상세 페이지(/artists/:id)는 아래 3개 API를 동시에 호출해야 합니다.
+        순서대로 호출하면 응답 시간이 누적되므로 반드시 병렬로 처리해야 합니다.
+
+          1) GET /artists/{id}              → 화가 기본 정보 및 약력
+          2) GET /artists/{id}/artworks?limit=20 → 대표 작품 갤러리
+          3) GET /artists/{id}/map-data     → 작품 분포 미니맵 데이터
+
+        프론트엔드 구현 예시 (JavaScript):
+          const [artist, artworks, mapData] = await Promise.all([
+            fetch('/api/v1/artists/{id}'),
+            fetch('/api/v1/artists/{id}/artworks?limit=20'),
+            fetch('/api/v1/artists/{id}/map-data')
+          ]);
+
+        부분 실패 처리:
+        - 3번(map-data)이 실패해도 화가 정보와 갤러리는 표시해야 합니다.
+        - Promise.allSettled()를 사용하고 각 결과를 개별적으로 처리하세요.
+        - map-data 실패 시 미니맵 영역에 "지도 데이터를 불러올 수 없습니다" 표시.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "화가 고유 ID. ERD: artists.id"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 성공. 화가 상세 정보 반환.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtistDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 07. GET /artists/{id}/artworks
+  # 화가의 작품 목록
+  # F-003
+  # [v1.1.0] limit/page 우선순위 규칙 추가
+  # ----------------------------------------------------------
+  /artists/{id}/artworks:
+    get:
+      summary: 화가의 작품 목록 조회
+      operationId: getArtistArtworks
+      tags:
+        - Artists
+      description: |
+        특정 화가의 작품 목록을 반환합니다.
+        limit=20 으로 갤러리, 페이지네이션으로 전체 목록에 사용됩니다.
+
+        [PRD] F-003 — 대표 작품 갤러리 (최대 20개), 전체 작품 목록
+
+        [ERD 흐름]
+        artwork_artists.artist_id = {id}
+          → artworks → artwork_locations (end_date IS NULL) → places → institutions
+
+        [limit/page 우선순위 규칙 — v1.1.0]
+        1) limit 파라미터가 존재하는 경우:
+           - page, per_page는 무시합니다.
+           - 전체 결과 중 artworks.year_created ASC 정렬 기준 상위 limit개를 반환합니다.
+           - 주 사용처: 화가 상세 페이지 갤러리 (?limit=20)
+
+        2) limit 파라미터가 없는 경우:
+           - page, per_page 기준으로 페이지네이션을 적용합니다.
+           - 주 사용처: 전체 작품 목록 페이지 (?page=1&per_page=20)
+
+        3) limit과 page/per_page를 동시에 전달한 경우:
+           - limit만 적용하고 page/per_page는 무시합니다.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "화가 고유 ID. ERD: artists.id"
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          description: |
+            최대 반환 수. 갤러리 모드 시 20 사용.
+            이 파라미터가 존재하면 page/per_page는 무시됩니다.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: page
+          in: query
+          required: false
+          description: "limit이 없을 때만 유효합니다. 기본값 1."
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          description: "limit이 없을 때만 유효합니다. 기본값 20."
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: 성공. 작품 목록 반환.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ArtworkSummaryWithMuseum"
+                  total:
+                    type: integer
+                    example: 43
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 08. GET /artists/{id}/map-data
+  # 화가 작품 분포 미니맵 전용 데이터
+  # F-003
+  # ----------------------------------------------------------
+  /artists/{id}/map-data:
+    get:
+      summary: 화가 작품 분포 미니맵 데이터 조회
+      operationId: getArtistMapData
+      tags:
+        - Artists
+      description: |
+        화가 상세 페이지 분포 미니맵 렌더링 전용 경량 데이터입니다.
+
+        [PRD] F-003 — 작품 분포 미니 지도 (나라별 작품 수)
+
+        [ERD 흐름]
+        artwork_artists → artwork_ownerships → institutions.country_code (GROUP BY)
+        → places (국가 대표 좌표)
+
+        [참고] 이 API는 GET /artists/{id}와 병렬 호출됩니다.
+        화가 상세 페이지 병렬 호출 가이드는 GET /artists/{id} description을 참조하세요.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "화가 고유 ID. ERD: artists.id"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 성공. 국가별 분포 데이터 반환.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArtistCountryDistribution"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 09. GET /artworks
+  # 작품 목록
+  # F-004
+  # [ADDED v1.3.0] 누락된 작품 목록 엔드포인트 신규 추가
+  # ----------------------------------------------------------
+  /artworks:
+    get:
+      summary: 작품 목록 조회
+      operationId: getArtworks
+      tags:
+        - Artworks
+      description: |
+        작품 목록을 반환합니다.
+
+        [PRD] F-004 — /artworks 목록 페이지 및 검색 결과 "작품 더 보기"
+
+        [ERD 흐름]
+        artworks → artwork_artists → artists
+        artwork_ownerships → institutions (artist_id / movement 필터 경유)
+
+        [사용 시나리오]
+        1) /artworks 페이지 직접 접근: 필터 없이 전체 목록 탐색
+        2) 화가 팬 탐색: ?artist_id={id} 로 특정 화가의 전체 작품 목록
+        3) 검색 결과 더 보기: /search 드롭다운의 "작품 N개 더 보기" 클릭 후
+           /artworks?q={검색어} 로 연결 (검색어 필터 추후 추가 고려)
+
+        [반환 스키마]
+        미술관명을 포함해야 목록에서 소장처를 바로 확인할 수 있으므로
+        ArtworkSummaryWithMuseum을 반환합니다.
+      parameters:
+        - name: artist_id
+          in: query
+          required: false
+          description: "화가 ID 필터. ERD: artwork_artists.artist_id"
+          schema:
+            type: string
+            format: uuid
+        - name: movement
+          in: query
+          required: false
+          description: "화풍 필터. ERD: art_movements.name_en (artwork_artists → artists → artist_movements 경유)"
+          schema:
+            type: string
+          example: "Impressionism"
+        - name: status
+          in: query
+          required: false
+          description: "작품 상태 필터. ERD: artworks.status"
+          schema:
+            type: string
+            enum:
+              - on_display
+              - in_storage
+              - on_loan
+              - under_restoration
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - year_asc
+              - year_desc
+              - title_asc
+            default: year_asc
+          description: "정렬 기준. year_asc = 제작연도 오름차순(기본값)"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: 성공. 작품 목록 반환.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ArtworkSummaryWithMuseum"
+                  total:
+                    type: integer
+                    example: 500
+                  page:
+                    type: integer
+                    example: 1
+                  per_page:
+                    type: integer
+                    example: 20
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 10. GET /artworks/{id}
+  # 작품 상세
+  # F-004
+  # [v1.1.0] current_location / primary_museum 복수 행 처리 규칙 추가
+  # [UPDATED v1.2.0] current_location에 museum_id 추가
+  #                  Partial Unique Index 필수 적용으로 강화
+  # ----------------------------------------------------------
+  /artworks/{id}:
+    get:
+      summary: 작품 상세 정보 조회
+      operationId: getArtworkById
+      tags:
+        - Artworks
+      description: |
+        개별 작품의 상세 정보를 반환합니다.
+        가장 많은 테이블을 조인하는 API입니다.
+
+        [PRD] F-004 — 이미지, 제목, 화가, 연도, 매체, 크기, 소장처, 상태, 큐레이션
+        비즈니스 규칙: 대여 중이면 현재 전시처와 원소장처 모두 표시
+
+        [ERD 흐름]
+        artworks → artwork_artists → artists
+        원소장처: artwork_ownerships (is_primary_owner=true) → institutions → places
+        현재위치: artwork_locations (end_date IS NULL) → places → institutions
+
+        [current_location 복수 행 처리 규칙 — v1.1.0]
+        artwork_locations 테이블에서 동일 artwork_id에 end_date IS NULL인 행이
+        복수 존재하는 경우(데이터 입력 오류 등):
+        - start_date가 가장 최근인 행 1건만 current_location으로 반환합니다.
+        - 백엔드 로그에 WARN 레벨로 기록해야 합니다.
+
+        [primary_museum 복수 행 처리 규칙 — v1.1.0]
+        artwork_ownerships 테이블에서 동일 artwork_id에 is_primary_owner=true인
+        행이 복수 존재하는 경우(데이터 입력 오류 등):
+        - artwork_ownerships.created_at 기준 가장 오래된 행(최초 등록) 1건만
+          primary_museum으로 반환합니다.
+        - 백엔드 로그에 WARN 레벨로 기록해야 합니다.
+
+        [UPDATED v1.2.0 — Partial Unique Index 필수 적용]
+        아래 두 인덱스는 권고 사항이 아닌 필수 적용 사항입니다.
+        미적용 시 복수 행 처리 로직이 모든 작품 조회마다 상시 실행되며,
+        데이터 오염 시 사용자에게 잘못된 위치 정보가 노출될 위험이 있습니다.
+
+        백엔드 담당자는 초기 DB 셋업 시 아래 DDL을 반드시 적용해야 합니다:
+
+          -- 한 작품에 "현재 위치"는 단 하나만 존재해야 합니다.
+          CREATE UNIQUE INDEX uq_artwork_active_location
+          ON artwork_locations (artwork_id)
+          WHERE end_date IS NULL;
+
+          -- 한 작품에 "주 소장처"는 단 하나만 존재해야 합니다.
+          CREATE UNIQUE INDEX uq_artwork_primary_owner
+          ON artwork_ownerships (artwork_id)
+          WHERE is_primary_owner = true;
+
+        적용 확인 방법 (백엔드 담당자):
+          SELECT indexname FROM pg_indexes
+          WHERE tablename IN ('artwork_locations', 'artwork_ownerships')
+          AND indexname LIKE 'uq_artwork_%';
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "작품 고유 ID. ERD: artworks.id"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 성공. 작품 상세 정보 반환.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArtworkDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  # ----------------------------------------------------------
+  # 11. GET /search
+  # 통합 검색
+  # F-001
+  # [UPDATED v1.2.0] page/per_page 파라미터 추가 (더 보기 기능 지원)
+  #                  429 Rate Limit 응답 추가
+  # ----------------------------------------------------------
+  /search:
+    get:
+      summary: 통합 검색
+      operationId: search
+      tags:
+        - Search
+      description: |
+        화가명, 작품명, 미술관명을 통합 검색합니다.
+
+        [PRD] F-001 — 검색어 2자 이상, 우선순위: 화가→작품→미술관, 부분 일치
+
+        [ERD 흐름]
+        artists.name_ko/en, artworks.title_ko/en, institutions.name_ko/en 부분 일치
+
+        [UPDATED v1.2.0 — 더 보기 기능 및 페이지네이션]
+        v1.1.0에서 artists_total/artworks_total/museums_total을 추가했으나
+        추가 결과를 불러올 방법이 없었습니다.
+
+        이번 버전에서 page와 per_page 파라미터를 추가합니다.
+        동작 방식:
+        - type=all인 경우: 모든 카테고리(artists/artworks/museums)에 동시 적용
+        - type=artist인 경우: artists만 페이지네이션, 나머지는 limit개까지만 반환
+        - type=artwork인 경우: artworks만 페이지네이션
+        - type=museum인 경우: museums만 페이지네이션
+
+        "화가 더 보기" 버튼 구현 예시:
+          GET /search?q=고흐&type=artist&page=2&per_page=5
+          → artists 결과 2페이지 반환 (6번째~10번째 화가)
+          → artworks/museums는 limit 기준 첫 페이지만 반환
+
+        [자동완성 사용 시 주의사항 — 프론트엔드]
+        이 API는 자동완성 용도로 사용자가 타이핑하는 동안 계속 호출됩니다.
+        프론트엔드에서 반드시 Debounce(지연 처리)를 적용해야 합니다.
+        - 권장 설정: 사용자가 타이핑을 멈춘 후 300ms 대기 후 API 호출
+        - 미적용 시: "빈센트 반 고흐" 입력 시 10회 이상 API 호출 발생
+        - Debounce는 백엔드 변경 없이 프론트엔드 코드에서만 처리합니다.
+
+        [검색 성능 — 백엔드]
+        부분 일치(LIKE '%검색어%') 검색을 위해 pg_trgm 인덱스 적용을 권장합니다.
+        MVP(500건) 단계에서는 당장 문제가 없으나, 데이터 증가 시 성능이 저하됩니다.
+          CREATE EXTENSION IF NOT EXISTS pg_trgm;
+          CREATE INDEX idx_artists_name_ko_trgm ON artists USING gin(name_ko gin_trgm_ops);
+          CREATE INDEX idx_artists_name_en_trgm ON artists USING gin(name_en gin_trgm_ops);
+          CREATE INDEX idx_artworks_title_ko_trgm ON artworks USING gin(title_ko gin_trgm_ops);
+          CREATE INDEX idx_artworks_title_en_trgm ON artworks USING gin(title_en gin_trgm_ops);
+          CREATE INDEX idx_institutions_name_ko_trgm ON institutions USING gin(name_ko gin_trgm_ops);
+          CREATE INDEX idx_institutions_name_en_trgm ON institutions USING gin(name_en gin_trgm_ops);
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: "검색어 (2자 이상 필수)"
+          schema:
+            type: string
+            minLength: 2
+          example: "고흐"
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - all
+              - artist
+              - artwork
+              - museum
+            default: all
+        - name: limit
+          in: query
+          required: false
+          description: |
+            카테고리별 최대 반환 수. 자동완성 드롭다운에 사용합니다.
+            page 파라미터와 함께 사용하지 않습니다.
+            page가 존재하면 limit은 무시됩니다.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+        - name: page
+          in: query
+          required: false
+          description: |
+            [UPDATED v1.2.0] 더 보기 기능을 위한 페이지 번호.
+            type 파라미터와 함께 사용합니다.
+            page가 존재하면 limit은 무시됩니다.
+            예시: /search?q=고흐&type=artist&page=2&per_page=5
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          description: |
+            [UPDATED v1.2.0] 페이지당 반환 건수. page와 함께 사용합니다.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 5
+      responses:
+        "200":
+          description: 성공. 카테고리별 검색 결과 반환.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResult"
+        "400":
+          description: 검색어 2자 미만
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+              example:
+                type: "https://artmap.com/errors/bad-request"
+                title: "Bad Request"
+                status: 400
+                detail: "검색어는 2자 이상이어야 합니다."
+                instance: "/api/v1/search?q=고"
+        # [UPDATED v1.2.0] 429 응답 추가
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+
+# ============================================================
+# 공통 응답 정의
+# ============================================================
+components:
+
+  responses:
+
+    NotFound:
+      description: 요청한 리소스를 찾을 수 없음.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+          example:
+            type: "https://artmap.com/errors/not-found"
+            title: "Not Found"
+            status: 404
+            detail: "요청한 리소스를 찾을 수 없습니다."
+            instance: "/api/v1/resource/id"
+
+    InternalServerError:
+      description: 서버 내부 오류.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+          example:
+            type: "https://artmap.com/errors/internal-server-error"
+            title: "Internal Server Error"
+            status: 500
+            detail: "서버 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+            instance: "/api/v1/endpoint"
+
+    # [UPDATED v1.2.0] 429 Too Many Requests 추가
+    TooManyRequests:
+      description: |
+        요청 횟수 초과. Rate Limiting에 의해 차단된 상태입니다.
+
+        [백엔드 구현 가이드]
+        - 기준 예시: IP당 60회/분 (프로덕션 환경에 맞게 조정)
+        - 검색 API(/search)는 자동완성 특성상 빈번한 호출이 발생하므로
+          다른 API보다 너그러운 기준을 적용할 수 있습니다.
+        - Retry-After 헤더에 재시도 가능 시간(초)을 포함해야 합니다.
+        - 프론트엔드는 429 수신 시 Retry-After 헤더 값만큼 대기 후 재시도합니다.
+      headers:
+        Retry-After:
+          description: "재시도 가능까지 남은 시간(초)"
+          schema:
+            type: integer
+            example: 30
+        X-RateLimit-Limit:
+          description: "허용된 최대 요청 횟수 (시간 창 기준)"
+          schema:
+            type: integer
+            example: 60
+        X-RateLimit-Remaining:
+          description: "현재 시간 창에서 남은 요청 가능 횟수"
+          schema:
+            type: integer
+            example: 0
+        X-RateLimit-Reset:
+          description: "Rate Limit 카운터가 초기화되는 Unix 타임스탬프"
+          schema:
+            type: integer
+            example: 1711123456
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+          example:
+            type: "https://artmap.com/errors/too-many-requests"
+            title: "Too Many Requests"
+            status: 429
+            detail: "요청 횟수가 초과되었습니다. 30초 후 다시 시도해주세요."
+            instance: "/api/v1/search?q=고흐"
+
+# ============================================================
+# 스키마 정의
+# ============================================================
+  schemas:
+
+    # ----------------------------------------------------------
+    # ProblemDetail — RFC 9457 표준 에러 구조
+    # ----------------------------------------------------------
+    ProblemDetail:
+      type: object
+      description: |
+        RFC 9457 (Problem Details for HTTP APIs) 표준 에러 응답 구조.
+        Content-Type: application/problem+json
+
+        고정값 (에러 종류마다 항상 동일): type, title, status
+        가변값 (발생마다 다를 수 있음): detail, instance
+      properties:
+        type:
+          type: string
+          format: uri
+          description: "에러 종류 식별 URI. 동일 에러면 항상 같은 값."
+          example: "https://artmap.com/errors/not-found"
+        title:
+          type: string
+          description: "에러 종류 제목. 동일 에러면 항상 같은 값."
+          example: "Not Found"
+        status:
+          type: integer
+          description: "HTTP 상태 코드"
+          example: 404
+        detail:
+          type: string
+          description: "이번 발생에 대한 구체적 설명."
+          example: "요청한 리소스를 찾을 수 없습니다."
+        instance:
+          type: string
+          format: uri-reference
+          description: "에러 발생 요청 URI"
+          example: "/api/v1/artworks/999"
+
+    # ----------------------------------------------------------
+    # CountryMapData — /map/countries 응답 전용
+    # ----------------------------------------------------------
+    CountryMapData:
+      type: object
+      description: |
+        국가별 작품 수 집계 데이터 (응답 전용 재조합 객체).
+        ERD: institutions.country_code GROUP BY + artwork_ownerships COUNT + places 좌표
+
+        [집계 기준]
+        공동 소장 작품은 각 소장 기관의 국가에 각각 1건으로 집계됩니다.
+        따라서 모든 국가의 artwork_count 합산이 실제 총 작품 수보다 클 수 있습니다.
+      required:
+        - country_code
+        - artwork_count
+        - latitude
+        - longitude
+      properties:
+        country_code:
+          type: string
+          description: "ERD: institutions.country_code"
+          minLength: 2
+          maxLength: 2
+          example: "FR"
+        country_name_ko:
+          type: string
+          description: "ERD 직접 대응 없음. 백엔드 변환."
+          example: "프랑스"
+        country_name_en:
+          type: string
+          description: "ERD 직접 대응 없음. 백엔드 변환."
+          example: "France"
+        artwork_count:
+          type: integer
+          minimum: 1
+          description: "ERD: artwork_ownerships COUNT (국가 기관 소장 기준)"
+          example: 847
+        latitude:
+          type: number
+          format: float
+          description: "ERD: places.latitude (국가 대표 좌표)"
+          example: 46.2276
+        longitude:
+          type: number
+          format: float
+          description: "ERD: places.longitude (국가 대표 좌표)"
+          example: 2.2137
+
+    # ----------------------------------------------------------
+    # MuseumSummary — /museums 목록 응답
+    # ----------------------------------------------------------
+    MuseumSummary:
+      type: object
+      description: "미술관 목록 카드 객체. ERD: institutions + places 조합."
+      required:
+        - id
+        - name_ko
+        - name_en
+        - institution_type
+        - country_code
+        - city
+        - latitude
+        - longitude
+        - artwork_count
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ERD: institutions.id"
+        name_ko:
+          type: string
+          description: "ERD: institutions.name_ko"
+          example: "오르세 미술관"
+        name_en:
+          type: string
+          description: "ERD: institutions.name_en"
+          example: "Musée d'Orsay"
+        institution_type:
+          type: string
+          description: "ERD: institutions.institution_type"
+          enum: [museum, gallery, private_collection, foundation]
+        country_code:
+          type: string
+          description: "ERD: institutions.country_code"
+          example: "FR"
+        city:
+          type: string
+          description: "ERD: places.city"
+          example: "Paris"
+        latitude:
+          type: number
+          format: float
+          description: "ERD: places.latitude"
+        longitude:
+          type: number
+          format: float
+          description: "ERD: places.longitude"
+        artwork_count:
+          type: integer
+          minimum: 0
+          description: "ERD: artwork_ownerships COUNT"
+          example: 312
+
+    # ----------------------------------------------------------
+    # MuseumDetail — /museums/{id} 상세 응답
+    # ----------------------------------------------------------
+    MuseumDetail:
+      type: object
+      description: "미술관 상세 객체. ERD: institutions + places 조합."
+      required:
+        - id
+        - name_ko
+        - name_en
+        - institution_type
+        - country_code
+        - place
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ERD: institutions.id"
+        name_ko:
+          type: string
+          description: "ERD: institutions.name_ko"
+        name_en:
+          type: string
+          description: "ERD: institutions.name_en"
+        institution_type:
+          type: string
+          enum: [museum, gallery, private_collection, foundation]
+          description: "ERD: institutions.institution_type"
+        country_code:
+          type: string
+          description: "ERD: institutions.country_code"
+        description_ko:
+          type: string
+          nullable: true
+          description: "ERD: institutions.description_ko"
+        description_en:
+          type: string
+          nullable: true
+          description: "ERD: institutions.description_en"
+        website:
+          type: string
+          format: uri
+          nullable: true
+          description: "ERD: institutions.website"
+        place:
+          $ref: "#/components/schemas/PlaceInfo"
+
+    # ----------------------------------------------------------
+    # PlaceInfo — places 테이블 대응 객체
+    # ----------------------------------------------------------
+    PlaceInfo:
+      type: object
+      description: "ERD: places 테이블 직접 대응."
+      required:
+        - country
+        - city
+        - latitude
+        - longitude
+      properties:
+        name_ko:
+          type: string
+          nullable: true
+          description: "ERD: places.name_ko"
+        name_en:
+          type: string
+          nullable: true
+          description: "ERD: places.name_en"
+        country:
+          type: string
+          description: "ERD: places.country"
+        city:
+          type: string
+          description: "ERD: places.city"
+        address:
+          type: string
+          nullable: true
+          description: "ERD: places.address"
+        latitude:
+          type: number
+          format: float
+          description: "ERD: places.latitude"
+        longitude:
+          type: number
+          format: float
+          description: "ERD: places.longitude"
+        opening_hours:
+          type: object
+          nullable: true
+          description: "ERD: places.opening_hours (jsonb). 최종 확정 위치."
+        admission:
+          type: object
+          nullable: true
+          description: "ERD: places.admission (jsonb)"
+
+    # ----------------------------------------------------------
+    # ArtworkSummary — 작품 목록 카드 (미술관 소장 목록용)
+    # ----------------------------------------------------------
+    ArtworkSummary:
+      type: object
+      description: "작품 목록 카드 객체. ERD: artworks + artwork_artists + artists 조합."
+      required:
+        - id
+        - title_ko
+        - title_en
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ERD: artworks.id"
+        title_ko:
+          type: string
+          description: "ERD: artworks.title_ko"
+        title_en:
+          type: string
+          description: "ERD: artworks.title_en"
+        year_created:
+          type: integer
+          nullable: true
+          description: "ERD: artworks.year_created"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          description: "ERD: artworks.image_url"
+        status:
+          type: string
+          enum: [on_display, in_storage, on_loan, under_restoration]
+          description: "ERD: artworks.status"
+        artist:
+          type: object
+          nullable: true
+          description: "ERD: artists (artwork_artists 경유)"
+          properties:
+            id:
+              type: string
+              format: uuid
+            name_ko:
+              type: string
+            name_en:
+              type: string
+
+    # ----------------------------------------------------------
+    # ArtworkSummaryWithMuseum — 화가 작품 갤러리 카드 (미술관명 포함)
+    # ----------------------------------------------------------
+    ArtworkSummaryWithMuseum:
+      type: object
+      description: "화가 작품 갤러리 카드 객체. ArtworkSummary에 미술관명 추가."
+      required:
+        - id
+        - title_ko
+        - title_en
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ERD: artworks.id"
+        title_ko:
+          type: string
+          description: "ERD: artworks.title_ko"
+        title_en:
+          type: string
+          description: "ERD: artworks.title_en"
+        year_created:
+          type: integer
+          nullable: true
+          description: "ERD: artworks.year_created"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          description: "ERD: artworks.image_url"
+        status:
+          type: string
+          enum: [on_display, in_storage, on_loan, under_restoration]
+          description: "ERD: artworks.status"
+        museum_name_ko:
+          type: string
+          nullable: true
+          description: "ERD: institutions.name_ko (artwork_locations → places → institutions 경유, end_date IS NULL)"
+        museum_name_en:
+          type: string
+          nullable: true
+          description: "ERD: institutions.name_en"
+
+    # ----------------------------------------------------------
+    # ArtistSummary — 화가 목록 카드
+    # ----------------------------------------------------------
+    ArtistSummary:
+      type: object
+      description: "화가 목록 카드 객체. ERD: artists + art_movements 조합."
+      required:
+        - id
+        - name_ko
+        - name_en
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ERD: artists.id"
+        name_ko:
+          type: string
+          description: "ERD: artists.name_ko"
+        name_en:
+          type: string
+          description: "ERD: artists.name_en"
+        birth_year:
+          type: integer
+          nullable: true
+          description: "ERD: artists.birth_year"
+        death_year:
+          type: integer
+          nullable: true
+          description: "ERD: artists.death_year"
+        nationality:
+          type: string
+          nullable: true
+          description: "ERD: artists.nationality"
+        thumbnail_url:
+          type: string
+          format: uri
+          nullable: true
+          description: "ERD: artists.thumbnail_url"
+        movements:
+          type: array
+          description: "ERD: art_movements (artist_movements 경유)"
+          items:
+            type: object
+            properties:
+              name_ko:
+                type: string
+              name_en:
+                type: string
+        artwork_count:
+          type: integer
+          nullable: true
+          description: "ERD: artwork_artists COUNT"
+
+    # ----------------------------------------------------------
+    # ArtistDetail — 화가 상세
+    # ----------------------------------------------------------
+    ArtistDetail:
+      type: object
+      description: "화가 상세 객체. ERD: artists + art_movements 조합."
+      required:
+        - id
+        - name_ko
+        - name_en
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ERD: artists.id"
+        name_ko:
+          type: string
+          description: "ERD: artists.name_ko"
+        name_en:
+          type: string
+          description: "ERD: artists.name_en"
+        birth_year:
+          type: integer
+          nullable: true
+          description: "ERD: artists.birth_year"
+        death_year:
+          type: integer
+          nullable: true
+          description: "ERD: artists.death_year"
+        nationality:
+          type: string
+          nullable: true
+          description: "ERD: artists.nationality"
+        bio_ko:
+          type: string
+          nullable: true
+          description: "ERD: artists.bio_ko (300자 이내 표시 권장)"
+        bio_en:
+          type: string
+          nullable: true
+          description: "ERD: artists.bio_en"
+        thumbnail_url:
+          type: string
+          format: uri
+          nullable: true
+          description: "ERD: artists.thumbnail_url"
+        movements:
+          type: array
+          description: "ERD: art_movements (artist_movements 경유)"
+          items:
+            type: object
+            properties:
+              name_ko:
+                type: string
+              name_en:
+                type: string
+              period_start:
+                type: integer
+                nullable: true
+              period_end:
+                type: integer
+                nullable: true
+
+    # ----------------------------------------------------------
+    # ArtistCountryDistribution — /artists/{id}/map-data 응답
+    # ----------------------------------------------------------
+    ArtistCountryDistribution:
+      type: object
+      description: "화가 작품 국가별 분포 집계 객체 (미니맵 전용)."
+      required:
+        - country_code
+        - artwork_count
+        - latitude
+        - longitude
+      properties:
+        country_code:
+          type: string
+          description: "ERD: institutions.country_code"
+        country_name_ko:
+          type: string
+          description: "ERD 직접 대응 없음. 백엔드 변환."
+        country_name_en:
+          type: string
+          description: "ERD 직접 대응 없음. 백엔드 변환."
+        artwork_count:
+          type: integer
+          minimum: 1
+        latitude:
+          type: number
+          format: float
+          description: "ERD: places.latitude"
+        longitude:
+          type: number
+          format: float
+          description: "ERD: places.longitude"
+
+    # ----------------------------------------------------------
+    # ArtworkDetail — /artworks/{id} 상세 응답
+    # [v1.1.0] primary_museum / current_location 복수 행 처리 규칙 반영
+    # [UPDATED v1.2.0] current_location에 museum_id 추가
+    # ----------------------------------------------------------
+    ArtworkDetail:
+      type: object
+      description: "작품 상세 객체. 가장 많은 테이블 조합."
+      required:
+        - id
+        - title_ko
+        - title_en
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: "ERD: artworks.id"
+        title_ko:
+          type: string
+          description: "ERD: artworks.title_ko"
+        title_en:
+          type: string
+          description: "ERD: artworks.title_en"
+        year_created:
+          type: integer
+          nullable: true
+          description: "ERD: artworks.year_created"
+        year_end:
+          type: integer
+          nullable: true
+          description: "ERD: artworks.year_end"
+        medium_ko:
+          type: string
+          nullable: true
+          description: "ERD: artworks.medium_ko"
+        medium_en:
+          type: string
+          nullable: true
+          description: "ERD: artworks.medium_en"
+        dimensions:
+          type: string
+          nullable: true
+          description: "ERD: artworks.dimensions"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          description: "ERD: artworks.image_url (is_public_domain=true 일 때)"
+        is_public_domain:
+          type: boolean
+          description: "ERD: artworks.is_public_domain"
+        status:
+          type: string
+          enum: [on_display, in_storage, on_loan, under_restoration]
+          description: "ERD: artworks.status"
+        curation_ko:
+          type: string
+          nullable: true
+          description: "ERD: artworks.curation_ko (300~1000자)"
+        curation_en:
+          type: string
+          nullable: true
+          description: "ERD: artworks.curation_en"
+        artist:
+          type: object
+          nullable: true
+          description: "ERD: artists (artwork_artists 경유)"
+          properties:
+            id:
+              type: string
+              format: uuid
+            name_ko:
+              type: string
+            name_en:
+              type: string
+        primary_museum:
+          type: object
+          nullable: true
+          description: |
+            원소장처 미술관 + 위치.
+            ERD: artwork_ownerships (is_primary_owner=true) → institutions + places
+
+            [복수 행 처리 규칙 — v1.1.0]
+            is_primary_owner=true 행이 동일 artwork_id에 복수 존재하는 경우:
+            - artwork_ownerships.created_at이 가장 오래된 행(최초 등록) 1건만 반환합니다.
+            - 백엔드 로그에 WARN 레벨로 기록합니다.
+            - 근본 대응은 DB Partial Unique Index 필수 적용입니다. (GET /artworks/{id} description 참조)
+          properties:
+            id:
+              type: string
+              format: uuid
+            name_ko:
+              type: string
+            name_en:
+              type: string
+            city:
+              type: string
+            country_code:
+              type: string
+            latitude:
+              type: number
+              format: float
+            longitude:
+              type: number
+              format: float
+        current_location:
+          type: object
+          nullable: true
+          description: |
+            현재 전시 위치 (대여 중일 때만 존재).
+            ERD: artwork_locations (end_date IS NULL) → places → institutions
+            PRD F-004 비즈니스 규칙: 대여 중이면 두 위치 모두 표시.
+
+            [복수 행 처리 규칙 — v1.1.0]
+            end_date IS NULL 행이 동일 artwork_id에 복수 존재하는 경우:
+            - start_date가 가장 최근인 행 1건만 반환합니다.
+            - 백엔드 로그에 WARN 레벨로 기록합니다.
+            - 근본 대응은 DB Partial Unique Index 필수 적용입니다. (GET /artworks/{id} description 참조)
+
+            [UPDATED v1.2.0 — museum_id 추가]
+            museum_id 필드를 추가합니다.
+            이유: 현재 전시처 미술관 이름만 있고 ID가 없으면,
+            해당 미술관 상세 페이지(/museums/{id})로 이동하는 링크를 만들 수 없습니다.
+            ArtMap의 핵심 사용 흐름인 "대여 중 작품 → 현재 전시처 미술관 탐색"을 위해 필수입니다.
+          properties:
+            museum_id:
+              type: string
+              format: uuid
+              nullable: true
+              description: |
+                [UPDATED v1.2.0] 현재 전시 중인 미술관의 ID.
+                ERD: artwork_locations → places → institutions.id
+                프론트엔드에서 /museums/{museum_id}로 링크를 생성합니다.
+                기관 정보가 없는 위치(예: 개인 소장처)의 경우 null일 수 있습니다.
+            museum_name_ko:
+              type: string
+              description: "ERD: institutions.name_ko"
+            museum_name_en:
+              type: string
+              description: "ERD: institutions.name_en"
+            city:
+              type: string
+            country_code:
+              type: string
+            latitude:
+              type: number
+              format: float
+            longitude:
+              type: number
+              format: float
+            start_date:
+              type: string
+              format: date
+              description: "ERD: artwork_locations.start_date"
+            end_date:
+              type: string
+              format: date
+              nullable: true
+              description: "ERD: artwork_locations.end_date (현재 전시 중이면 null)"
+
+    # ----------------------------------------------------------
+    # SearchResult — /search 응답
+    # [v1.1.0] artists_total / artworks_total / museums_total 필드 추가
+    # [UPDATED v1.2.0] page / per_page 파라미터에 대응하는 응답 구조 반영
+    # ----------------------------------------------------------
+    SearchResult:
+      type: object
+      description: "통합 검색 결과. 화가/작품/미술관 세 카테고리로 분류."
+      properties:
+        query:
+          type: string
+          description: "입력된 검색어 (에코백)"
+        page:
+          type: integer
+          description: |
+            [UPDATED v1.2.0] 현재 페이지 번호.
+            page 파라미터를 사용하지 않은 경우(자동완성 모드) 1을 반환합니다.
+          example: 1
+        per_page:
+          type: integer
+          description: "[UPDATED v1.2.0] 페이지당 반환 건수."
+          example: 5
+        artists_total:
+          type: integer
+          description: |
+            전체 화가 매칭 건수. 응답 배열(artists)의 실제 반환 수와 다를 수 있습니다.
+            프론트엔드에서 "화가 N명 더 보기" 버튼 구현에 사용합니다.
+            더 보기: GET /search?q={query}&type=artist&page=2&per_page=5
+          example: 12
+        artworks_total:
+          type: integer
+          description: |
+            전체 작품 매칭 건수. 더 보기: GET /search?q={query}&type=artwork&page=2&per_page=5
+          example: 80
+        museums_total:
+          type: integer
+          description: |
+            전체 미술관 매칭 건수. 더 보기: GET /search?q={query}&type=museum&page=2&per_page=5
+          example: 3
+        artists:
+          type: array
+          description: "화가 검색 결과 (우선순위 1위). ERD: artists 부분 일치."
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name_ko:
+                type: string
+              name_en:
+                type: string
+              thumbnail_url:
+                type: string
+                format: uri
+                nullable: true
+        artworks:
+          type: array
+          description: "작품 검색 결과 (우선순위 2위). ERD: artworks 부분 일치."
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              title_ko:
+                type: string
+              title_en:
+                type: string
+              artist_name_ko:
+                type: string
+                nullable: true
+              image_url:
+                type: string
+                format: uri
+                nullable: true
+        museums:
+          type: array
+          description: "미술관 검색 결과 (우선순위 3위). ERD: institutions 부분 일치."
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name_ko:
+                type: string
+              name_en:
+                type: string
+              city:
+                type: string
+              country_code:
+                type: string
