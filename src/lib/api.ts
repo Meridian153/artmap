@@ -1,9 +1,9 @@
 // API 클라이언트 — 모든 API 호출의 중앙 진입점
 // NEXT_PUBLIC_USE_MOCK=true 이면 Mock 데이터 반환, false 이면 실제 API 호출
 
-import type { CountryMapData } from "@/types/map";
+import type { CountryMapData, ArtistCountryDistribution } from "@/types/map";
 import type { MuseumSummary, MuseumDetail } from "@/types/museum";
-import type { ArtistSummary, ArtistDetail, ArtistCountryDistribution } from "@/types/artist";
+import type { ArtistSummary, ArtistDetail } from "@/types/artist";
 import type {
   ArtworkDetail,
   ArtworkSummaryWithMuseum,
@@ -19,6 +19,7 @@ import { mockMuseums, mockMuseumDetail } from "@/mocks/museums";
 import { mockArtists, mockArtistDetail, mockArtistMapData } from "@/mocks/artists";
 import { mockArtworks, mockArtworkDetail } from "@/mocks/artworks";
 import { mockSearchResults } from "@/mocks/search";
+import { getCountryName } from "@/lib/country-names";
 
 // ─── 설정 ────────────────────────────────────────────────────────────────────
 
@@ -122,20 +123,19 @@ export async function getMuseums(
 ): Promise<PaginatedResponse<MuseumSummary>> {
   if (USE_MOCK) {
     let filtered = mockMuseums;
+    // 국가 필터: country_code 일치 또는 한/영 국가명을 country-names 사전으로 조회해 부분 매칭
     if (params?.country) {
-      const c = params.country.toLowerCase();
-      filtered = filtered.filter(
-        (m) =>
-          m.country_code.toLowerCase() === c ||
-          m.country_ko.includes(params.country!) ||
-          m.country_en.toLowerCase().includes(c),
-      );
+      const needle = params.country.toLowerCase();
+      filtered = filtered.filter((m) => {
+        if (m.country_code.toLowerCase() === needle) return true;
+        const name = getCountryName(m.country_code);
+        return name.ko.includes(params.country!) || name.en.toLowerCase().includes(needle);
+      });
     }
+    // 도시 필터: city는 단일 문자열이므로 대소문자 무시 부분 매칭
     if (params?.city) {
-      const c = params.city.toLowerCase();
-      filtered = filtered.filter(
-        (m) => m.city_ko.includes(params.city!) || m.city_en.toLowerCase().includes(c),
-      );
+      const needle = params.city.toLowerCase();
+      filtered = filtered.filter((m) => m.city.toLowerCase().includes(needle));
     }
     return paginate(filtered, params?.page, params?.per_page);
   }
@@ -169,13 +169,34 @@ export async function getMuseumArtworks(
   params?: GetMuseumArtworksParams,
 ): Promise<{ data: MuseumArtworkSummary[]; total: number }> {
   if (USE_MOCK) {
-    // current_museum.id가 일치하는 작품만 필터링
-    const filtered = mockArtworks.filter((aw) => aw.current_museum?.id === id);
+    // ArtworkSummaryWithMuseum에는 museum_id가 없으므로 mockArtworkDetail.primary_museum.id로 매칭
+    // 결과는 MuseumArtworkSummary 형태(year_label/thumbnail_url)로 변환
+    const filtered = mockArtworks.filter(
+      (aw) => mockArtworkDetail[aw.id]?.primary_museum?.id === id,
+    );
+    const toMuseumSummary = (aw: (typeof mockArtworks)[number]): MuseumArtworkSummary => {
+      const detail = mockArtworkDetail[aw.id];
+      return {
+        id: aw.id,
+        title_ko: aw.title_ko,
+        title_en: aw.title_en,
+        year_label: aw.year_created !== null ? String(aw.year_created) : null,
+        thumbnail_url: aw.image_url,
+        status: aw.status,
+        artist: detail?.artist
+          ? {
+              id: detail.artist.id,
+              name_ko: detail.artist.name_ko,
+              name_en: detail.artist.name_en,
+            }
+          : null,
+      };
+    };
     if (params?.limit !== undefined) {
-      return { data: filtered.slice(0, params.limit), total: filtered.length };
+      return { data: filtered.slice(0, params.limit).map(toMuseumSummary), total: filtered.length };
     }
     const paged = paginate(filtered, params?.page, params?.per_page);
-    return { data: paged.data, total: paged.total };
+    return { data: paged.data.map(toMuseumSummary), total: paged.total };
   }
   return fetchApi<{ data: MuseumArtworkSummary[]; total: number }>(
     `/museums/${id}/artworks`,
@@ -202,12 +223,18 @@ export async function getArtists(
 ): Promise<PaginatedResponse<ArtistSummary>> {
   if (USE_MOCK) {
     let filtered = mockArtists;
+    // nationality는 단일 문자열(영문 원문)이므로 대소문자 무시 부분 매칭
     if (params?.nationality) {
-      const n = params.nationality.toLowerCase();
-      filtered = filtered.filter(
-        (a) =>
-          a.nationality_ko.includes(params.nationality!) ||
-          a.nationality_en.toLowerCase().includes(n),
+      const needle = params.nationality.toLowerCase();
+      filtered = filtered.filter((a) => (a.nationality ?? "").toLowerCase().includes(needle));
+    }
+    // movement 필터: movements 배열에서 한/영 사조명을 부분 매칭
+    if (params?.movement) {
+      const needle = params.movement.toLowerCase();
+      filtered = filtered.filter((a) =>
+        a.movements.some(
+          (m) => m.name_ko.includes(params.movement!) || m.name_en.toLowerCase().includes(needle),
+        ),
       );
     }
     return paginate(filtered, params?.page, params?.per_page);
@@ -242,7 +269,8 @@ export async function getArtistArtworks(
   params?: GetArtistArtworksParams,
 ): Promise<{ data: ArtworkSummaryWithMuseum[]; total: number }> {
   if (USE_MOCK) {
-    const filtered = mockArtworks.filter((aw) => aw.artist.id === id);
+    // ArtworkSummaryWithMuseum에는 artist_id가 없으므로 mockArtworkDetail.artist.id로 매칭
+    const filtered = mockArtworks.filter((aw) => mockArtworkDetail[aw.id]?.artist?.id === id);
     if (params?.limit !== undefined) {
       return { data: filtered.slice(0, params.limit), total: filtered.length };
     }
@@ -286,8 +314,9 @@ export async function getArtworks(
 ): Promise<PaginatedResponse<ArtworkSummaryWithMuseum>> {
   if (USE_MOCK) {
     let filtered = mockArtworks;
+    // artist_id 필터: ArtworkSummaryWithMuseum에 artist_id가 없으므로 detail에서 조회
     if (params?.artist_id) {
-      filtered = filtered.filter((aw) => aw.artist.id === params.artist_id);
+      filtered = filtered.filter((aw) => mockArtworkDetail[aw.id]?.artist?.id === params.artist_id);
     }
     if (params?.status) {
       filtered = filtered.filter((aw) => aw.status === params.status);

@@ -1,9 +1,13 @@
 // 작품 상세 Hero — 이미지 패널 + 상세 정보 패널의 2열 레이아웃
 // 서버 컴포넌트. 좌: 이미지/저작권 분기, 우: 제목/화가/메타/미술관 정보.
+//
+// 화가 메타라인은 응답에 nationality/birth_year/death_year가 포함되지 않아
+// 이름만 노출합니다 — 기술 부채 #1.
 
 import Link from "next/link";
 import Image from "next/image";
 import type { ArtworkDetail } from "@/types/artwork";
+import { formatYearLabel } from "@/lib/format-year";
 
 export type ArtworkHeroProps = {
   artwork: ArtworkDetail;
@@ -15,19 +19,11 @@ const STATUS_BADGE: Record<ArtworkDetail["status"], { bg: string; text: string; 
   on_loan: { bg: "bg-blue-100", text: "text-blue-700", label: "대여 중" },
   in_storage: { bg: "bg-zinc-100", text: "text-zinc-600", label: "수장고 보관" },
   under_restoration: { bg: "bg-amber-100", text: "text-amber-700", label: "복원 중" },
-  unknown: { bg: "bg-zinc-100", text: "text-zinc-500", label: "상태 미상" },
 };
 
 export function ArtworkHero({ artwork }: ArtworkHeroProps) {
   const badge = STATUS_BADGE[artwork.status];
-
-  // 화가 생몰년 표기
-  const artistMeta = (() => {
-    const { birth_year, death_year, nationality_ko } = artwork.artist;
-    if (birth_year === null) return nationality_ko;
-    const years = `${birth_year}–${death_year ?? "현재"}`;
-    return `${nationality_ko}, ${years}`;
-  })();
+  const yearLabel = formatYearLabel(artwork.year_created, artwork.year_end);
 
   return (
     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -70,23 +66,24 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
           <p className="mt-1 text-lg text-zinc-500">{artwork.title_en}</p>
         </div>
 
-        {/* (3) 화가 정보 */}
-        <div>
-          <Link
-            href={`/artists/${artwork.artist.id}`}
-            className="font-medium text-zinc-900 underline-offset-2 hover:underline"
-          >
-            {artwork.artist.name_ko}
-          </Link>
-          <p className="mt-0.5 text-sm text-zinc-500">{artistMeta}</p>
-        </div>
+        {/* (3) 화가 정보 — 이름만 표시 (nationality/생몰년 미반환) */}
+        {artwork.artist && (
+          <div>
+            <Link
+              href={`/artists/${artwork.artist.id}`}
+              className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+            >
+              {artwork.artist.name_ko ?? artwork.artist.name_en ?? "작가 정보 없음"}
+            </Link>
+          </div>
+        )}
 
         {/* (4) 작품 메타 정보 */}
         <dl className="space-y-1 text-sm">
-          {artwork.year_label && (
+          {yearLabel && (
             <div className="flex gap-2">
               <dt className="text-zinc-500">제작 연도</dt>
-              <dd className="text-zinc-900">{artwork.year_label}</dd>
+              <dd className="text-zinc-900">{yearLabel}</dd>
             </div>
           )}
           {artwork.medium_ko && (
@@ -128,10 +125,12 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
                       href={`/museums/${artwork.current_location.museum_id}`}
                       className="text-zinc-900 underline-offset-2 hover:underline"
                     >
-                      {artwork.current_location.museum_name_ko}
+                      {artwork.current_location.museum_name_ko ?? "이름 정보 없음"}
                     </Link>
                   ) : (
-                    <span className="text-zinc-900">{artwork.current_location.museum_name_ko}</span>
+                    <span className="text-zinc-900">
+                      {artwork.current_location.museum_name_ko ?? "이름 정보 없음"}
+                    </span>
                   )}
                 </div>
               )}

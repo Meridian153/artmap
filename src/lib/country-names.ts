@@ -1,5 +1,5 @@
 // 국가 코드 → 국가명 변환 테이블
-// ERD에 countries 테이블이 없으므로 백엔드에서 정적 매핑으로 처리합니다.
+// ERD에 countries 테이블이 없으므로 백엔드/프론트 양쪽에서 정적 매핑으로 처리합니다.
 // API 명세 설명: "ERD 직접 대응 없음. 백엔드 변환."
 
 type CountryName = { ko: string; en: string };
@@ -50,7 +50,21 @@ export const COUNTRY_NAMES: Record<string, CountryName> = {
   ZA: { ko: "남아프리카공화국", en: "South Africa" },
 };
 
-/** 국가 코드로 한/영 국가명을 반환. 매핑 없을 경우 코드 그대로 반환 */
-export function getCountryName(code: string): CountryName {
-  return COUNTRY_NAMES[code] ?? { ko: code, en: code };
+/**
+ * 국가 코드로 국가명을 반환합니다.
+ *
+ * 오버로드:
+ *   - locale 미지정 시 `{ ko, en }` 객체 반환 (API route에서 사용)
+ *   - locale 지정 시 해당 언어 문자열 반환 (컴포넌트에서 사용)
+ *
+ * 매핑이 없으면 코드 자체를 그대로 반환합니다.
+ */
+export function getCountryName(code: string): CountryName;
+export function getCountryName(code: string, locale: "ko" | "en"): string;
+export function getCountryName(code: string, locale?: "ko" | "en"): CountryName | string {
+  const entry = COUNTRY_NAMES[code] ?? { ko: code, en: code };
+  if (locale === undefined) {
+    return entry;
+  }
+  return entry[locale];
 }

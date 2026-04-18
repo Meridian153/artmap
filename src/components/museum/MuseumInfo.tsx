@@ -1,5 +1,8 @@
-// 미술관 상세 정보 섹션 — 소개, 운영시간, 입장료, 기본 정보를 카드로 표시
-// 서버 컴포넌트. 각 필드가 null이면 해당 줄/섹션은 렌더링하지 않음.
+// 미술관 상세 정보 섹션 — 소개, 운영시간, 입장료, 웹사이트를 카드로 표시
+// 서버 컴포넌트. 각 필드가 null이면 해당 섹션은 렌더링하지 않음.
+//
+// opening_hours / admission는 DB의 jsonb 원형(스키마 미정의)이므로 MVP 단계에서는
+// 최소 표시(JSON pretty print)만 합니다 — 기술 부채 #6.
 
 import type { MuseumDetail } from "@/types/museum";
 
@@ -20,42 +23,39 @@ export function MuseumInfo({ museum }: MuseumInfoProps) {
         </section>
       )}
 
-      {/* 운영 시간 — opening_hours 배열을 ul로 */}
-      {place.opening_hours && place.opening_hours.length > 0 && (
+      {/* 운영 시간 — jsonb 원형을 미니멀하게 표시 (구조 정형화는 MVP 이후) */}
+      {place.opening_hours && (
         <section className="rounded-lg border border-zinc-200 p-6">
           <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">
             운영 시간
           </h2>
-          <ul className="mt-3 space-y-1 text-zinc-800">
-            {place.opening_hours.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+          <pre className="mt-3 text-sm whitespace-pre-wrap text-zinc-800">
+            {JSON.stringify(place.opening_hours, null, 2)}
+          </pre>
         </section>
       )}
 
-      {/* 입장료 — adult는 굵게, notes는 보조 텍스트 */}
+      {/* 입장료 — jsonb 원형을 미니멀하게 표시 (구조 정형화는 MVP 이후) */}
       {place.admission && (
         <section className="rounded-lg border border-zinc-200 p-6">
           <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">입장료</h2>
-          <p className="mt-3 text-lg font-semibold text-zinc-900">성인 {place.admission.adult}</p>
-          {place.admission.notes && (
-            <p className="mt-1 text-sm text-zinc-600">{place.admission.notes}</p>
-          )}
+          <pre className="mt-3 text-sm whitespace-pre-wrap text-zinc-800">
+            {JSON.stringify(place.admission, null, 2)}
+          </pre>
         </section>
       )}
 
       {/* 웹사이트 — 외부 링크. 주소/좌표는 MuseumLocationMap에서 표시 */}
-      {museum.website_url && (
+      {museum.website && (
         <section className="rounded-lg border border-zinc-200 p-6">
           <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">웹사이트</h2>
           <a
-            href={museum.website_url}
+            href={museum.website}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 inline-block text-blue-600 underline"
           >
-            {museum.website_url}
+            {museum.website}
           </a>
         </section>
       )}
