@@ -46,3 +46,6 @@ next-env.d.ts
 # Claude Code 로컬 설정 (개인 권한 설정 포함, 공유 불필요)
 .claude/settings.local.json
 .claude/skills/
+
+# Claude Code working directory
+.claude/
