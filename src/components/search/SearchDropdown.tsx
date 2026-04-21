@@ -21,8 +21,10 @@ export type SearchDropdownProps = {
 };
 
 // 드롭다운 컨테이너 공통 스타일
+// max-h: 모바일은 60vh로 뷰포트 높이에 비례(짧은 기기에서 화면 초과 방지),
+// 데스크톱(lg≥1024px)은 320px 고정으로 과도한 세로 확장 방지.
 const DROPDOWN_WRAPPER_CLASS =
-  "absolute top-full left-0 z-50 mt-1 max-h-80 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900";
+  "absolute top-full left-0 z-50 mt-1 max-h-[60vh] w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg lg:max-h-80 dark:border-gray-700 dark:bg-gray-900";
 
 // 루트 컨테이너 공통 ARIA 속성 — combobox의 aria-controls 대상이다.
 const LISTBOX_ARIA = {

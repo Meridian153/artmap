@@ -86,16 +86,10 @@ export function SearchBar({ className = "" }: SearchBarProps) {
   }, [results]);
 
   // ── debouncedQuery 변경 → API 호출 ─────────────────────────────────────
+  // 2자 미만 쿼리로 인한 idle 리셋은 handleChange에서 즉시 수행한다(effect body에서의
+  // setState 호출은 styleguide §5-4의 cascading render 안티패턴에 해당).
   useEffect(() => {
-    // 2자 미만이면 API 호출하지 않고 idle 상태로 리셋
     if (debouncedQuery.length < MIN_QUERY_LENGTH) {
-      // 이전 요청이 진행 중이면 취소
-      if (abortRef.current) {
-        abortRef.current.abort();
-        abortRef.current = null;
-      }
-      setStatus("idle");
-      setResults(null);
       return;
     }
 
@@ -106,7 +100,13 @@ export function SearchBar({ className = "" }: SearchBarProps) {
     const controller = new AbortController();
     abortRef.current = controller;
 
+    // loading 상태 진입과 드롭다운 오픈을 함께 갱신(status → isOpen 파생 effect 제거).
+    // debouncedQuery 변화 시 "비동기 요청 시작 전" 사전 동기화 — React 공식 데이터
+    // 페칭 패턴이며, handleChange로 옮기면 debounce 대기 중에도 로딩이 표시되어
+    // UX가 저하된다. 따라서 여기서는 effect body setState를 의도적으로 허용한다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStatus("loading");
+    setIsOpen(true);
 
     // 자동완성 모드: page 없이 limit만 전달
     search({ q: debouncedQuery, limit: AUTOCOMPLETE_LIMIT }, controller.signal)
@@ -123,6 +123,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
           setResults(data);
           setStatus("success");
         }
+        setIsOpen(true);
         // 새 결과가 도착하면 이전 activeIndex는 더 이상 유효하지 않으므로 리셋
         setActiveIndex(-1);
       })
@@ -137,6 +138,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
         }
         console.error("[SearchBar] search failed", error);
         setStatus("error");
+        setIsOpen(true);
       });
 
     // effect cleanup — 새로운 debouncedQuery로 재실행될 때 이전 요청 취소
@@ -144,16 +146,6 @@ export function SearchBar({ className = "" }: SearchBarProps) {
       controller.abort();
     };
   }, [debouncedQuery]);
-
-  // ── status → isOpen 동기화 ─────────────────────────────────────────────
-  // 결과/에러/로딩 상태가 되면 드롭다운을 자동으로 연다. idle은 닫는다.
-  useEffect(() => {
-    if (status === "idle") {
-      setIsOpen(false);
-    } else {
-      setIsOpen(true);
-    }
-  }, [status]);
 
   // ── 바깥 클릭으로 드롭다운 닫기 ────────────────────────────────────────
   // activeIndex 리셋은 드롭다운을 닫는 모든 분기(여기·Escape·handleItemClick 등)에
@@ -178,8 +170,13 @@ export function SearchBar({ className = "" }: SearchBarProps) {
     setQuery(next);
     // 키보드 탐색 중 글자 입력 시 이전 선택을 즉시 해제
     setActiveIndex(-1);
-    // 입력을 완전히 비우면 즉시 상태·결과를 초기화하고 드롭다운을 닫는다
-    if (next.length === 0) {
+    // 2자 미만이면 in-flight 요청을 취소하고 상태·결과를 즉시 초기화한다.
+    // (effect body에서 setState를 호출하지 않기 위해 여기서 처리 — styleguide §5-4)
+    if (next.length < MIN_QUERY_LENGTH) {
+      if (abortRef.current) {
+        abortRef.current.abort();
+        abortRef.current = null;
+      }
       setStatus("idle");
       setResults(null);
       setIsOpen(false);
