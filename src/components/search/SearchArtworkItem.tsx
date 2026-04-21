@@ -46,7 +46,7 @@ export function SearchArtworkItem({ artwork, index, isActive, onClick }: SearchA
       {artwork.image_url ? (
         <Image
           src={artwork.image_url}
-          alt=""
+          alt={`${artwork.title_ko} 썸네일`}
           width={32}
           height={32}
           className="h-8 w-8 shrink-0 rounded object-cover"

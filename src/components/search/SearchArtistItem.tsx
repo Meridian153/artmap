@@ -46,7 +46,7 @@ export function SearchArtistItem({ artist, index, isActive, onClick }: SearchArt
       {artist.thumbnail_url ? (
         <Image
           src={artist.thumbnail_url}
-          alt=""
+          alt={`${artist.name_ko} 프로필 사진`}
           width={32}
           height={32}
           className="h-8 w-8 shrink-0 rounded-full object-cover"

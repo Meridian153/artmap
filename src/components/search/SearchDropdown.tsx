@@ -79,7 +79,15 @@ export function SearchDropdown({ status, results, activeIndex, onItemClick }: Se
     return null;
   }
 
-  const { artists, artworks, museums, artists_total, artworks_total, museums_total } = results;
+  // API 응답 필드 누락에 대비해 기본값을 적용한다(배열=빈 배열, total=0).
+  const {
+    artists = [],
+    artworks = [],
+    museums = [],
+    artists_total = 0,
+    artworks_total = 0,
+    museums_total = 0,
+  } = results;
   const hasAny = artists.length > 0 || artworks.length > 0 || museums.length > 0;
 
   if (!hasAny) {

@@ -60,22 +60,23 @@ export function SearchBar({ className = "" }: SearchBarProps) {
     if (results === null) {
       return [];
     }
+    // API 응답 누락(배열 필드 미전송)에 대비해 각 배열에 `?? []`를 적용한다.
     return [
-      ...results.artists.map(
+      ...(results.artists ?? []).map(
         (artist): FlatItem => ({
           type: "artist",
           data: artist,
           path: `/artists/${artist.id}`,
         }),
       ),
-      ...results.artworks.map(
+      ...(results.artworks ?? []).map(
         (artwork): FlatItem => ({
           type: "artwork",
           data: artwork,
           path: `/artworks/${artwork.id}`,
         }),
       ),
-      ...results.museums.map(
+      ...(results.museums ?? []).map(
         (museum): FlatItem => ({
           type: "museum",
           data: museum,
@@ -115,7 +116,9 @@ export function SearchBar({ className = "" }: SearchBarProps) {
         if (controller.signal.aborted) {
           return;
         }
-        const total = data.artists.length + data.artworks.length + data.museums.length;
+        // 응답 배열이 누락돼도 안전하게 total을 계산한다.
+        const total =
+          (data.artists?.length ?? 0) + (data.artworks?.length ?? 0) + (data.museums?.length ?? 0);
         if (total === 0) {
           setStatus("empty");
           setResults(data);
