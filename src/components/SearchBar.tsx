@@ -171,7 +171,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
         onChange={handleChange}
         onFocus={handleFocus}
         placeholder="화가, 작품, 미술관 검색..."
-        className="w-full rounded-full border border-transparent bg-gray-100 py-2 pr-4 pl-9 text-sm transition-colors placeholder:text-gray-400 focus:border-gray-300 focus:bg-white focus:outline-none"
+        className="w-full rounded-full border border-transparent bg-gray-100 py-2 pr-4 pl-9 text-sm text-gray-900 transition-colors placeholder:text-gray-400 focus:border-gray-300 focus:bg-white focus:outline-none dark:bg-gray-800 dark:text-gray-100 dark:focus:border-gray-600 dark:focus:bg-gray-700"
       />
       {/* 드롭다운 — isOpen일 때만 렌더링 */}
       {isOpen && <SearchDropdown status={status} results={results} onItemClick={handleItemClick} />}
