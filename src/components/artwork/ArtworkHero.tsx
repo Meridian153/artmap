@@ -36,6 +36,7 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
             width={600}
             height={800}
             className="h-full w-full object-cover"
+            unoptimized
           />
         ) : artwork.is_public_domain ? (
           <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-100 text-zinc-400">
