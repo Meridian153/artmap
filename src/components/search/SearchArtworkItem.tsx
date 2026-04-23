@@ -50,6 +50,7 @@ export function SearchArtworkItem({ artwork, index, isActive, onClick }: SearchA
           width={32}
           height={32}
           className="h-8 w-8 shrink-0 rounded object-cover"
+          unoptimized
         />
       ) : (
         <div
