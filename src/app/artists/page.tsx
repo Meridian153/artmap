@@ -24,7 +24,8 @@ export default async function ArtistsPage({ searchParams }: ArtistsPageProps) {
   let artists: Awaited<ReturnType<typeof getArtists>>;
   try {
     artists = await getArtists({ page: currentPage, per_page: PER_PAGE });
-  } catch {
+  } catch (error) {
+    console.error("Failed to fetch artists:", error);
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* 페이지 헤더 */}

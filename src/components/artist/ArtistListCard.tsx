@@ -44,13 +44,7 @@ export function ArtistListCard({ artist }: ArtistListCardProps) {
       {/* 이미지 영역 — h-40 고정으로 모든 카드에서 동일한 높이를 보장 */}
       <div className="relative h-40 w-full shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800">
         {artist.thumbnail_url ? (
-          <Image
-            src={artist.thumbnail_url}
-            alt={artist.name_ko}
-            fill
-            className="object-cover"
-            unoptimized
-          />
+          <Image src={artist.thumbnail_url} alt={artist.name_ko} fill className="object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm text-gray-400 dark:text-gray-500">
             이미지 준비 중

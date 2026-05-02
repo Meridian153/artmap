@@ -16,9 +16,8 @@ export function CardGridSkeleton({ count = DEFAULT_COUNT, className }: CardGridS
   return (
     <div className={`grid gap-6 ${className ?? DEFAULT_GRID_CLASS}`}>
       {Array.from({ length: count }).map((_, i) => (
-        // 스켈레톤 카드는 동일한 더미 요소이므로 인덱스를 key로 사용 (재정렬 없음)
         <div
-          key={i}
+          key={`skeleton-${i}`}
           className="animate-pulse overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
         >
           {/* 이미지 영역 — 세로가 가로보다 긴 4:5 비율 */}

@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  images: {
+    remotePatterns: [
+      // 메트로폴리탄 미술관 작품 이미지 CDN
+      { protocol: "https", hostname: "images.metmuseum.org" },
+      // 위키미디어 공용 이미지 파일 서버 — 화가 초상화 등 퍼블릭 도메인 이미지
+      { protocol: "https", hostname: "upload.wikimedia.org" },
+    ],
+  },
 };
 
 export default nextConfig;
