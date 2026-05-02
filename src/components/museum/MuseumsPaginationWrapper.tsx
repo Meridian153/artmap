@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/common/Pagination";
 
 type MuseumsPaginationWrapperProps = {
@@ -16,10 +16,13 @@ export function MuseumsPaginationWrapper({
   totalPages,
 }: MuseumsPaginationWrapperProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // 페이지 변경 시 URL 쿼리 파라미터 갱신 → 서버 컴포넌트 재실행
+  // 페이지 변경 시 기존 쿼리 파라미터를 유지한 채 page만 갱신 → 서버 컴포넌트 재실행
   const handlePageChange = (page: number) => {
-    router.push(`/museums?page=${page}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(page));
+    router.push(`/museums?${params.toString()}`);
   };
 
   return (

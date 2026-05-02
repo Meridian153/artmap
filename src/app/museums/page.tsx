@@ -20,6 +20,7 @@ export default async function MuseumsPage({ searchParams }: MuseumsPageProps) {
   // 유효한 정수로 파싱, 범위 밖이면 1로 고정
   const currentPage = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
+  // TODO: TanStack Query 도입 시 데이터 패칭 로직 리팩토링 검토
   let museums: Awaited<ReturnType<typeof getMuseums>>;
   try {
     museums = await getMuseums({ page: currentPage, per_page: PER_PAGE });
