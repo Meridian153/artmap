@@ -14,10 +14,10 @@ export function MuseumHero({ museum }: MuseumHeroProps) {
   const countryName = getCountryName(museum.country_code, "ko");
 
   return (
-    <header className="border-b border-zinc-200 pb-8">
+    <header className="border-border border-b pb-8">
       {/* 썸네일 영역 — 실제 이미지 도입 전까지 placeholder만 렌더. 추후 next/image로 교체 예정 */}
       <div
-        className="flex h-[300px] w-full items-center justify-center bg-zinc-100 text-sm text-zinc-400"
+        className="bg-muted text-muted-foreground flex h-[300px] w-full items-center justify-center text-sm"
         aria-label="미술관 대표 이미지 없음"
       >
         이미지 준비 중
@@ -25,9 +25,9 @@ export function MuseumHero({ museum }: MuseumHeroProps) {
 
       {/* 이름 + 위치 */}
       <div className="mt-8">
-        <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">{museum.name_ko}</h1>
-        <p className="mt-2 text-lg text-zinc-500 italic">{museum.name_en}</p>
-        <p className="mt-4 text-base text-zinc-700">
+        <h1 className="text-foreground text-4xl font-semibold tracking-tight">{museum.name_ko}</h1>
+        <p className="text-muted-foreground mt-2 text-lg italic">{museum.name_en}</p>
+        <p className="text-muted-foreground mt-4 text-base">
           {place.city}, {countryName}
         </p>
       </div>

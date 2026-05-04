@@ -14,11 +14,28 @@ export type ArtworkHeroProps = {
 };
 
 // 상태 배지 매핑 — 컴포넌트 외부에 정의해 렌더링마다 재생성 방지
+// 상태 의미가 강한 색이므로 시맨틱 토큰 대신 고정 색상 클래스 + dark: 짝 사용
 const STATUS_BADGE: Record<ArtworkDetail["status"], { bg: string; text: string; label: string }> = {
-  on_display: { bg: "bg-emerald-100", text: "text-emerald-700", label: "전시 중" },
-  on_loan: { bg: "bg-blue-100", text: "text-blue-700", label: "대여 중" },
-  in_storage: { bg: "bg-zinc-100", text: "text-zinc-600", label: "수장고 보관" },
-  under_restoration: { bg: "bg-amber-100", text: "text-amber-700", label: "복원 중" },
+  on_display: {
+    bg: "bg-emerald-100 dark:bg-emerald-900/30",
+    text: "text-emerald-800 dark:text-emerald-300",
+    label: "전시 중",
+  },
+  on_loan: {
+    bg: "bg-blue-100 dark:bg-blue-900/30",
+    text: "text-blue-800 dark:text-blue-300",
+    label: "대여 중",
+  },
+  in_storage: {
+    bg: "bg-zinc-100 dark:bg-zinc-800",
+    text: "text-zinc-800 dark:text-zinc-300",
+    label: "수장고 보관",
+  },
+  under_restoration: {
+    bg: "bg-amber-100 dark:bg-amber-900/30",
+    text: "text-amber-800 dark:text-amber-300",
+    label: "복원 중",
+  },
 };
 
 export function ArtworkHero({ artwork }: ArtworkHeroProps) {
@@ -39,13 +56,13 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
             unoptimized
           />
         ) : artwork.is_public_domain ? (
-          <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-100 text-zinc-400">
+          <div className="bg-muted text-muted-foreground flex h-full w-full flex-col items-center justify-center">
             <span className="text-sm">이미지 준비 중</span>
           </div>
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-6 text-center text-zinc-500">
+          <div className="bg-muted text-muted-foreground flex h-full w-full flex-col items-center justify-center gap-2 px-6 text-center">
             <span className="text-base font-medium">저작권 보호 작품</span>
-            <span className="text-sm text-zinc-400">미술관 공식 사이트에서 확인하세요</span>
+            <span className="text-muted-foreground text-sm">미술관 공식 사이트에서 확인하세요</span>
           </div>
         )}
       </div>
@@ -64,7 +81,7 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
         {/* (2) 제목 */}
         <div>
           <h1 className="text-2xl leading-tight font-bold md:text-3xl">{artwork.title_ko}</h1>
-          <p className="mt-1 text-lg text-zinc-500">{artwork.title_en}</p>
+          <p className="text-muted-foreground mt-1 text-lg">{artwork.title_en}</p>
         </div>
 
         {/* (3) 화가 정보 — 이름만 표시 (nationality/생몰년 미반환) */}
@@ -72,7 +89,7 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
           <div>
             <Link
               href={`/artists/${artwork.artist.id}`}
-              className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+              className="text-foreground font-medium underline-offset-2 hover:underline"
             >
               {artwork.artist.name_ko ?? artwork.artist.name_en ?? "작가 정보 없음"}
             </Link>
@@ -83,20 +100,20 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
         <dl className="space-y-1 text-sm">
           {yearLabel && (
             <div className="flex gap-2">
-              <dt className="text-zinc-500">제작 연도</dt>
-              <dd className="text-zinc-900">{yearLabel}</dd>
+              <dt className="text-muted-foreground">제작 연도</dt>
+              <dd className="text-foreground">{yearLabel}</dd>
             </div>
           )}
           {artwork.medium_ko && (
             <div className="flex gap-2">
-              <dt className="text-zinc-500">재료</dt>
-              <dd className="text-zinc-900">{artwork.medium_ko}</dd>
+              <dt className="text-muted-foreground">재료</dt>
+              <dd className="text-foreground">{artwork.medium_ko}</dd>
             </div>
           )}
           {artwork.dimensions && (
             <div className="flex gap-2">
-              <dt className="text-zinc-500">크기</dt>
-              <dd className="text-zinc-900">{artwork.dimensions}</dd>
+              <dt className="text-muted-foreground">크기</dt>
+              <dd className="text-foreground">{artwork.dimensions}</dd>
             </div>
           )}
         </dl>
@@ -106,30 +123,30 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
           {artwork.status === "on_loan" ? (
             <>
               <div className="flex gap-2">
-                <span className="text-zinc-500">원소장처</span>
+                <span className="text-muted-foreground">원소장처</span>
                 {artwork.primary_museum ? (
                   <Link
                     href={`/museums/${artwork.primary_museum.id}`}
-                    className="text-zinc-900 underline-offset-2 hover:underline"
+                    className="text-foreground underline-offset-2 hover:underline"
                   >
                     {artwork.primary_museum.name_ko}
                   </Link>
                 ) : (
-                  <span className="text-zinc-900">소장처 정보 없음</span>
+                  <span className="text-foreground">소장처 정보 없음</span>
                 )}
               </div>
               {artwork.current_location && (
                 <div className="flex gap-2">
-                  <span className="text-zinc-500">현재 전시처</span>
+                  <span className="text-muted-foreground">현재 전시처</span>
                   {artwork.current_location.museum_id ? (
                     <Link
                       href={`/museums/${artwork.current_location.museum_id}`}
-                      className="text-zinc-900 underline-offset-2 hover:underline"
+                      className="text-foreground underline-offset-2 hover:underline"
                     >
                       {artwork.current_location?.museum_name_ko ?? "이름 정보 없음"}
                     </Link>
                   ) : (
-                    <span className="text-zinc-900">
+                    <span className="text-foreground">
                       {artwork.current_location?.museum_name_ko ?? "이름 정보 없음"}
                     </span>
                   )}
@@ -138,16 +155,16 @@ export function ArtworkHero({ artwork }: ArtworkHeroProps) {
             </>
           ) : (
             <div className="flex gap-2">
-              <span className="text-zinc-500">소장 미술관</span>
+              <span className="text-muted-foreground">소장 미술관</span>
               {artwork.primary_museum ? (
                 <Link
                   href={`/museums/${artwork.primary_museum.id}`}
-                  className="text-zinc-900 underline-offset-2 hover:underline"
+                  className="text-foreground underline-offset-2 hover:underline"
                 >
                   {artwork.primary_museum.name_ko}
                 </Link>
               ) : (
-                <span className="text-zinc-900">소장처 정보 없음</span>
+                <span className="text-foreground">소장처 정보 없음</span>
               )}
             </div>
           )}
