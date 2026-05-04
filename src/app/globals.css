@@ -3,6 +3,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* 시맨틱 색상 토큰. 컴포넌트는 가능한 한 이 토큰(bg-card, text-foreground, text-muted-foreground 등)을
+     사용하여 라이트/다크 자동 전환 혜택을 받는다. 2026-05-04 추가. */
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --border: #e4e4e7;
+  --accent: #171717;
 }
 
 @theme inline {
@@ -10,12 +19,30 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* 시맨틱 색상 토큰. 컴포넌트는 가능한 한 이 토큰(bg-card, text-foreground, text-muted-foreground 등)을
+     사용하여 라이트/다크 자동 전환 혜택을 받는다. 2026-05-04 추가. */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* 시맨틱 색상 토큰. 컴포넌트는 가능한 한 이 토큰(bg-card, text-foreground, text-muted-foreground 등)을
+       사용하여 라이트/다크 자동 전환 혜택을 받는다. 2026-05-04 추가. */
+    --card: #171717;
+    --card-foreground: #ededed;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --border: #3f3f46;
+    --accent: #ededed;
   }
 }
 

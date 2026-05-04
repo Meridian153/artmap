@@ -95,6 +95,52 @@
   순서([Prettier 플러그인 기준](https://github.com/tailwindlabs/prettier-plugin-tailwindcss))와
   다르면 지적해줘.
 
+### 3-4. 색상 클래스 작성 규칙
+
+ArtMap은 라이트 모드와 다크 모드를 모두 정상 동작시키는 것을 목표로 한다. 이를
+위해 색상은 시맨틱 토큰을 우선 사용한다.
+
+**1. 시맨틱 토큰 우선 원칙**
+
+새 컴포넌트의 색상 클래스는 다음 시맨틱 토큰을 우선 사용한다. 이 토큰들은
+globals.css의 CSS 변수에 매핑되어 있어 라이트/다크 모드를 자동 전환한다. `dark:`
+변형을 별도로 추가할 필요가 없다.
+
+| 용도                         | 클래스                  | 매핑               |
+| ---------------------------- | ----------------------- | ------------------ |
+| 페이지 배경                  | `bg-background`         | --background       |
+| 본문 글자                    | `text-foreground`       | --foreground       |
+| 카드/패널 배경               | `bg-card`               | --card             |
+| 카드 위 글자                 | `text-card-foreground`  | --card-foreground  |
+| 옅은 배경 (스켈레톤, 비활성) | `bg-muted`              | --muted            |
+| 보조 글자 (캡션, 메타)       | `text-muted-foreground` | --muted-foreground |
+| 구분선, 테두리               | `border-border`         | --border           |
+| 강조 글자, 활성 링크         | `text-accent`           | --accent           |
+
+**2. 고정 색상 클래스 사용 조건**
+
+다음 경우에만 고정 색상 클래스(bg-white, text-gray-900, bg-zinc-100 등)를
+허용한다.
+
+- 상태 의미가 강한 색상: emerald(성공/전시중), blue(정보/대여중),
+  amber(경고/복원중), red(에러)
+- 시맨틱 토큰으로 추상화하면 의미가 손실되는 경우
+
+이 경우에도 반드시 `dark:` 짝을 함께 작성한다. 예:
+`bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300`
+
+**3. 금지 사항**
+
+- 시맨틱 토큰으로 표현 가능한 색을 고정 클래스로 작성하는 것 (예: 페이지 배경에
+  `bg-white` 사용 금지. `bg-background` 사용)
+- `bg-white`, `text-gray-900` 등 고정 클래스를 `dark:` 짝 없이 사용하는 것
+- `gray-*`와 `zinc-*` 팔레트 혼용 (시맨틱 토큰 사용 시 자동으로 회피됨)
+
+**4. 적용 시점**
+
+본 규칙은 신규 작성되는 컴포넌트에 즉시 적용한다. 기존 컴포넌트는 다크 모드 일괄
+마이그레이션 작업(2026-05-04~)에서 단계적으로 적용 중이다.
+
 ---
 
 ## 4. Next.js 버그 및 보안 이슈

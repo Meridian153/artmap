@@ -89,6 +89,18 @@ CLAUDE.md와 `.gemini/styleguide.md` 사이에 충돌이 발생하면 항상
 
 ---
 
+## 색상 작성 규칙
+
+ArtMap은 라이트/다크 두 모드를 모두 정상 동작시킨다. 새 컴포넌트의 색상 클래스는
+시맨틱 토큰(`bg-background`, `bg-card`, `text-foreground`,
+`text-muted-foreground`, `border-border` 등)을 우선 사용한다. 이 토큰들은
+자동으로 라이트/다크를 전환하므로 `dark:` 변형이 불필요하다. 상태 의미가 강한
+색(emerald/blue/amber/red)만 고정 클래스로 작성하며, 이 경우 반드시 `dark:` 짝을
+함께 작성한다. 상세 규칙은 .gemini/styleguide.md의 "색상 클래스 작성 규칙"
+섹션을 참조.
+
+---
+
 ## 파일 경로 규칙
 
 | 파일 유형      | 경로                                 |
