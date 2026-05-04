@@ -32,14 +32,14 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 shadow-sm backdrop-blur-md">
+    <header className="bg-card/80 sticky top-0 z-50 shadow-sm backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4">
         {/* 데스크톱/모바일 공통 상단 줄 */}
         <div className="flex h-14 items-center gap-4">
           {/* 로고 */}
           <Link
             href="/"
-            className="shrink-0 text-xl font-bold text-gray-900 transition-colors hover:text-gray-600"
+            className="text-foreground hover:text-muted-foreground shrink-0 text-xl font-bold transition-colors"
           >
             ArtMap
           </Link>
@@ -59,8 +59,8 @@ export function Header() {
                   href={href}
                   className={`relative pb-0.5 text-sm transition-colors ${
                     active
-                      ? "font-semibold text-gray-900 after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:rounded-full after:bg-gray-900"
-                      : "text-gray-500 hover:text-gray-900"
+                      ? "text-foreground after:bg-foreground font-semibold after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:rounded-full"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {label}
@@ -74,7 +74,7 @@ export function Header() {
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
               aria-label={menuOpen ? "메뉴 닫기" : "메뉴 열기"}
-              className="p-2 text-gray-600 transition-colors hover:text-gray-900"
+              className="text-muted-foreground hover:text-foreground p-2 transition-colors"
             >
               {/* 햄버거 / X 아이콘 (SVG) */}
               {menuOpen ? (
@@ -113,7 +113,7 @@ export function Header() {
 
         {/* 모바일 드롭다운 메뉴 */}
         {menuOpen && (
-          <div className="flex flex-col gap-4 border-t border-gray-100 py-4 lg:hidden">
+          <div className="border-border flex flex-col gap-4 border-t py-4 lg:hidden">
             {/* 모바일 검색바 */}
             <SearchBar className="w-full" />
 
@@ -128,8 +128,8 @@ export function Header() {
                     onClick={handleNavClick}
                     className={`rounded-md px-2 py-2 text-sm transition-colors ${
                       active
-                        ? "bg-gray-100 font-semibold text-gray-900"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-muted text-foreground font-semibold"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     {label}
