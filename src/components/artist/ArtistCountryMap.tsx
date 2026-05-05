@@ -65,12 +65,12 @@ export function ArtistCountryMap({ distribution }: ArtistCountryMapProps) {
 
   return (
     <section className="mt-12">
-      <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">
+      <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
         국가별 작품 분포
       </h2>
 
       {/* 미니맵 컨테이너 — 비인터랙티브, 줌 컨트롤 숨김 */}
-      <div className="mt-3 h-[300px] overflow-hidden rounded-lg border border-zinc-200">
+      <div className="border-border mt-3 h-[300px] overflow-hidden rounded-lg border">
         <MapView
           initialViewState={{
             longitude: center.longitude,
@@ -97,7 +97,7 @@ export function ArtistCountryMap({ distribution }: ArtistCountryMapProps) {
                 <div
                   title={`${item.country_name_ko} (${item.country_name_en})`}
                   aria-label={`${item.country_name_ko} ${item.artwork_count}점`}
-                  className="flex items-center justify-center rounded-full bg-blue-500/70 font-semibold text-white"
+                  className="flex items-center justify-center rounded-full bg-blue-500/70 font-semibold text-white dark:bg-blue-400/70"
                   style={{ width: size, height: size, fontSize: size * 0.3 }}
                 >
                   {item.artwork_count}
@@ -109,7 +109,7 @@ export function ArtistCountryMap({ distribution }: ArtistCountryMapProps) {
       </div>
 
       {/* 캡션 리스트 — 좌표 누락 국가까지 모두 표시하여 텍스트 fallback 역할 */}
-      <ul className="mt-3 flex flex-col gap-1 text-sm text-zinc-600">
+      <ul className="text-muted-foreground mt-3 flex flex-col gap-1 text-sm">
         {sortedDistribution.map((item) => (
           <li key={item.country_code}>
             {item.country_name_ko} ({item.country_name_en}) — {item.artwork_count}점

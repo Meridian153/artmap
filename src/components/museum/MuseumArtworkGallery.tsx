@@ -14,28 +14,30 @@ export async function MuseumArtworkGallery({ museumId }: MuseumArtworkGalleryPro
 
   return (
     <section className="mt-12">
-      <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">소장 작품</h2>
+      <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+        소장 작품
+      </h2>
 
       {artworks.length === 0 ? (
-        <p className="mt-6 text-zinc-500">소장 작품 정보가 없습니다.</p>
+        <p className="text-muted-foreground mt-6">소장 작품 정보가 없습니다.</p>
       ) : (
         <ul className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
           {artworks.map((artwork) => (
             <li key={artwork.id}>
               <Link href={`/artworks/${artwork.id}`} className="group block">
                 {/* 정사각형 썸네일 placeholder — next/image 미사용 */}
-                <div className="flex aspect-square w-full items-center justify-center bg-zinc-100 text-xs text-zinc-400">
+                <div className="bg-muted text-muted-foreground flex aspect-square w-full items-center justify-center text-xs">
                   이미지 준비 중
                 </div>
                 <div className="mt-3">
-                  <p className="text-sm font-medium text-zinc-900 group-hover:underline">
+                  <p className="text-foreground text-sm font-medium group-hover:underline">
                     {artwork.title_ko}
                   </p>
-                  <p className="mt-1 text-xs text-zinc-600">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {artwork.artist?.name_ko ?? artwork.artist?.name_en ?? "작가 정보 없음"}
                   </p>
                   {artwork.year_label && (
-                    <p className="text-xs text-zinc-500">{artwork.year_label}</p>
+                    <p className="text-muted-foreground text-xs">{artwork.year_label}</p>
                   )}
                 </div>
               </Link>

@@ -24,10 +24,10 @@ export function MuseumLocationMap({ latitude, longitude, name, address }: Museum
 
   return (
     <section className="mt-12">
-      <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">위치</h2>
+      <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">위치</h2>
 
       {/* 미니맵 컨테이너 — 비인터랙티브, 줌 컨트롤 숨김 */}
-      <div className="mt-3 h-[300px] overflow-hidden rounded-lg border border-zinc-200">
+      <div className="border-border mt-3 h-[300px] overflow-hidden rounded-lg border">
         <MapView
           initialViewState={{ longitude, latitude, zoom: 14 }}
           isInteractive={false}
@@ -58,13 +58,13 @@ export function MuseumLocationMap({ latitude, longitude, name, address }: Museum
       </div>
 
       {/* 주소 + Google Maps 외부 링크 */}
-      <div className="mt-3 flex flex-col gap-1 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
+      <div className="text-muted-foreground mt-3 flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
         {address && <p>{address}</p>}
         <a
           href={googleMapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 underline"
+          className="text-blue-600 underline dark:text-blue-400"
         >
           Google Maps에서 보기
         </a>

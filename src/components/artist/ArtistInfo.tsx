@@ -14,21 +14,25 @@ export function ArtistInfo({ artist }: ArtistInfoProps) {
     <div className="mt-12 space-y-8">
       {/* 약력 — bio_ko가 truthy일 때만 */}
       {artist.bio_ko && (
-        <section className="rounded-lg border border-zinc-200 p-6">
-          <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">약력</h2>
-          <p className="mt-3 leading-relaxed text-zinc-800">{artist.bio_ko}</p>
+        <section className="border-border rounded-lg border p-6">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+            약력
+          </h2>
+          <p className="text-card-foreground mt-3 leading-relaxed">{artist.bio_ko}</p>
         </section>
       )}
 
       {/* 사조 — movements 배열을 리스트로 렌더 */}
       {(artist.movements?.length ?? 0) > 0 && (
-        <section className="rounded-lg border border-zinc-200 p-6">
-          <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">사조</h2>
-          <ul className="mt-3 space-y-1 text-zinc-800">
+        <section className="border-border rounded-lg border p-6">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+            사조
+          </h2>
+          <ul className="text-card-foreground mt-3 space-y-1">
             {artist.movements?.map((m) => (
               <li key={`${m.name_en}-${m.period_start ?? "x"}`}>
                 {m.name_ko}
-                <span className="ml-2 text-sm text-zinc-500">({m.name_en})</span>
+                <span className="text-muted-foreground ml-2 text-sm">({m.name_en})</span>
               </li>
             ))}
           </ul>
