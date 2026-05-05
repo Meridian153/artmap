@@ -42,8 +42,8 @@ export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMar
           title={museum.name_ko}
           className={`flex cursor-pointer items-center justify-center rounded-full shadow-md transition-all duration-200 hover:scale-125 hover:shadow-xl ${
             highlighted
-              ? "h-12 w-12 border-[3px] border-amber-500 bg-amber-50 hover:border-amber-600"
-              : "bg-card h-8 w-8 border-2 border-blue-700 hover:border-blue-900"
+              ? "h-12 w-12 border-[3px] border-amber-500 bg-amber-50 hover:border-amber-600 dark:border-amber-400 dark:bg-amber-900/20 dark:hover:border-amber-300"
+              : "bg-card h-8 w-8 border-2 border-blue-700 hover:border-blue-900 dark:border-blue-500 dark:hover:border-blue-700"
           }`}
         >
           {/* 건물 아이콘 SVG (인라인) */}
