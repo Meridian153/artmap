@@ -94,7 +94,7 @@ export function HomeMap() {
   // 로딩 중 표시
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-gray-500">
+      <div className="text-muted-foreground flex h-full items-center justify-center">
         지도를 불러오는 중...
       </div>
     );
@@ -103,7 +103,7 @@ export function HomeMap() {
   // 에러 표시
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center text-red-500">
+      <div className="flex h-full items-center justify-center text-red-500 dark:text-red-400">
         지도 데이터를 불러올 수 없습니다
       </div>
     );
@@ -140,7 +140,7 @@ export function HomeMap() {
         <button
           type="button"
           onClick={handleResetView}
-          className="absolute top-4 left-4 z-10 cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-md transition-all duration-200 hover:bg-gray-50 hover:shadow-lg"
+          className="border-border bg-card text-card-foreground hover:bg-muted absolute top-4 left-4 z-10 cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-medium shadow-md transition-all duration-200 hover:shadow-lg"
         >
           전체 지도 보기
         </button>

@@ -9,9 +9,11 @@ export function ArtworkCuration({ curationKo }: ArtworkCurationProps) {
   if (!curationKo) return null;
 
   return (
-    <section className="rounded-lg border border-zinc-200 p-6">
-      <h2 className="mb-3 text-xs font-medium tracking-wider text-zinc-500 uppercase">작품 해설</h2>
-      <p className="leading-relaxed whitespace-pre-line text-zinc-700">{curationKo}</p>
+    <section className="border-border rounded-lg border p-6">
+      <h2 className="text-muted-foreground mb-3 text-xs font-medium tracking-wider uppercase">
+        작품 해설
+      </h2>
+      <p className="text-card-foreground leading-relaxed whitespace-pre-line">{curationKo}</p>
     </section>
   );
 }

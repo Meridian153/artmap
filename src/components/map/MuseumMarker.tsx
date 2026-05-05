@@ -26,10 +26,10 @@ export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMar
       <div className="relative flex flex-col items-center">
         {/* 호버 시 미술관 이름 툴팁 */}
         {hovered && (
-          <div className="pointer-events-none absolute bottom-full z-10 mb-2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white shadow-lg">
+          <div className="pointer-events-none absolute bottom-full z-10 mb-2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white shadow-lg dark:bg-gray-700">
             {museum.name_ko}
             {/* 툴팁 꼬리 */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700" />
           </div>
         )}
 
@@ -42,8 +42,8 @@ export function MuseumMarker({ museum, onClick, highlighted = false }: MuseumMar
           title={museum.name_ko}
           className={`flex cursor-pointer items-center justify-center rounded-full shadow-md transition-all duration-200 hover:scale-125 hover:shadow-xl ${
             highlighted
-              ? "h-12 w-12 border-[3px] border-amber-500 bg-amber-50 hover:border-amber-600"
-              : "h-8 w-8 border-2 border-blue-700 bg-white hover:border-blue-900"
+              ? "h-12 w-12 border-[3px] border-amber-500 bg-amber-50 hover:border-amber-600 dark:border-amber-400 dark:bg-amber-900/20 dark:hover:border-amber-300"
+              : "bg-card h-8 w-8 border-2 border-blue-700 hover:border-blue-900 dark:border-blue-500 dark:hover:border-blue-700"
           }`}
         >
           {/* 건물 아이콘 SVG (인라인) */}

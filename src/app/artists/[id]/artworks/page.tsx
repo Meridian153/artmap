@@ -12,7 +12,9 @@ export default async function ArtistArtworksPage({ params }: ArtistArtworksPageP
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold">화가의 전체 작품</h1>
-      <p className="mt-4 text-lg text-zinc-600">화가의 전체 작품 목록입니다. 화가 ID: {id}</p>
+      <p className="text-muted-foreground mt-4 text-lg">
+        화가의 전체 작품 목록입니다. 화가 ID: {id}
+      </p>
     </div>
   );
 }

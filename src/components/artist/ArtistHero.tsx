@@ -13,10 +13,10 @@ export function ArtistHero({ artist }: ArtistHeroProps) {
     artist.birth_year !== null ? `${artist.birth_year}~${artist.death_year ?? "현재"}` : null;
 
   return (
-    <header className="border-b border-zinc-200 pb-8">
+    <header className="border-border border-b pb-8">
       {/* 썸네일 영역 — 실제 이미지 도입 전까지 placeholder만 렌더. 추후 next/image로 교체 예정 */}
       <div
-        className="flex h-[300px] w-full items-center justify-center bg-zinc-100 text-sm text-zinc-400"
+        className="bg-muted text-muted-foreground flex h-[300px] w-full items-center justify-center text-sm"
         aria-label="화가 대표 이미지 없음"
       >
         이미지 준비 중
@@ -24,11 +24,11 @@ export function ArtistHero({ artist }: ArtistHeroProps) {
 
       {/* 이름 + 국적/생몰년 메타 라인 */}
       <div className="mt-8">
-        <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">{artist.name_ko}</h1>
-        <p className="mt-2 text-lg text-zinc-500 italic">{artist.name_en}</p>
-        <p className="mt-4 text-base text-zinc-700">
+        <h1 className="text-foreground text-4xl font-semibold tracking-tight">{artist.name_ko}</h1>
+        <p className="text-muted-foreground mt-2 text-lg italic">{artist.name_en}</p>
+        <p className="text-muted-foreground mt-4 text-base">
           {artist.nationality ?? ""}
-          {lifeSpan && <span className="ml-2 text-zinc-500">({lifeSpan})</span>}
+          {lifeSpan && <span className="text-muted-foreground ml-2">({lifeSpan})</span>}
         </p>
       </div>
     </header>

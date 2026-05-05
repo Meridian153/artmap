@@ -17,19 +17,21 @@ export function MuseumInfo({ museum }: MuseumInfoProps) {
     <div className="mt-12 space-y-8">
       {/* 소개 — description_ko가 있을 때만 */}
       {museum.description_ko && (
-        <section className="rounded-lg border border-zinc-200 p-6">
-          <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">소개</h2>
-          <p className="mt-3 leading-relaxed text-zinc-800">{museum.description_ko}</p>
+        <section className="border-border rounded-lg border p-6">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+            소개
+          </h2>
+          <p className="text-card-foreground mt-3 leading-relaxed">{museum.description_ko}</p>
         </section>
       )}
 
       {/* 운영 시간 — jsonb 원형을 미니멀하게 표시 (구조 정형화는 MVP 이후) */}
       {place.opening_hours && (
-        <section className="rounded-lg border border-zinc-200 p-6">
-          <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">
+        <section className="border-border rounded-lg border p-6">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
             운영 시간
           </h2>
-          <pre className="mt-3 text-sm whitespace-pre-wrap text-zinc-800">
+          <pre className="text-card-foreground mt-3 text-sm whitespace-pre-wrap">
             {JSON.stringify(place.opening_hours, null, 2)}
           </pre>
         </section>
@@ -37,9 +39,11 @@ export function MuseumInfo({ museum }: MuseumInfoProps) {
 
       {/* 입장료 — jsonb 원형을 미니멀하게 표시 (구조 정형화는 MVP 이후) */}
       {place.admission && (
-        <section className="rounded-lg border border-zinc-200 p-6">
-          <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">입장료</h2>
-          <pre className="mt-3 text-sm whitespace-pre-wrap text-zinc-800">
+        <section className="border-border rounded-lg border p-6">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+            입장료
+          </h2>
+          <pre className="text-card-foreground mt-3 text-sm whitespace-pre-wrap">
             {JSON.stringify(place.admission, null, 2)}
           </pre>
         </section>
@@ -47,13 +51,15 @@ export function MuseumInfo({ museum }: MuseumInfoProps) {
 
       {/* 웹사이트 — 외부 링크. 주소/좌표는 MuseumLocationMap에서 표시 */}
       {museum.website && (
-        <section className="rounded-lg border border-zinc-200 p-6">
-          <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase">웹사이트</h2>
+        <section className="border-border rounded-lg border p-6">
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+            웹사이트
+          </h2>
           <a
             href={museum.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-block text-blue-600 underline"
+            className="mt-3 inline-block text-blue-600 underline dark:text-blue-400"
           >
             {museum.website}
           </a>
