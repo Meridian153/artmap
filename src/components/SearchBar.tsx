@@ -260,7 +260,7 @@ export function SearchBar({ className = "" }: SearchBarProps) {
     <div ref={wrapperRef} className={`relative flex items-center ${className}`}>
       {/* 검색 아이콘 (SVG) */}
       <svg
-        className="pointer-events-none absolute left-3 text-gray-400"
+        className="pointer-events-none absolute left-3 text-gray-400 dark:text-gray-500"
         width={16}
         height={16}
         viewBox="0 0 24 24"

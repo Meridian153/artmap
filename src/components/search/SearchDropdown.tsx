@@ -45,7 +45,7 @@ export function SearchDropdown({ status, results, activeIndex, onItemClick }: Se
       <div {...LISTBOX_ARIA} className={DROPDOWN_WRAPPER_CLASS}>
         <div className="flex items-center justify-center py-8">
           <div
-            className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
+            className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600 dark:border-gray-600 dark:border-t-gray-300"
             aria-label="검색 중"
             role="status"
           />
