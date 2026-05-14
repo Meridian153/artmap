@@ -1,7 +1,7 @@
 // Mock 미술관 데이터 — 개발/테스트용 실제 미술관 기반 샘플 데이터
 // 새 Types(API 반환 구조와 1:1 일치)에 맞춰 정합화됨.
 
-import type { MuseumSummary, MuseumDetail } from "@/types/museum";
+import type { FeaturedArtwork, MuseumSummary, MuseumDetail } from "@/types/museum";
 
 /** 미술관 목록 Mock 데이터 (GET /museums) */
 export const mockMuseums: MuseumSummary[] = [
@@ -15,6 +15,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 48.86,
     longitude: 2.3266,
     artwork_count: 2,
+    image_url: null, // PENDING_BE: image_url — GET /api/v1/museums
+    featured_artwork: {
+      artwork_id: "artwork-001",
+      artwork_title: "수련 (Water Lilies)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg",
+    } satisfies FeaturedArtwork, // PENDING_BE: featured_artwork — GET /api/v1/museums
   },
   {
     id: "museum-002",
@@ -26,6 +33,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 52.3584,
     longitude: 4.8811,
     artwork_count: 3,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-002",
+      artwork_title: "별이 빛나는 밤 (The Starry Night)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+    } satisfies FeaturedArtwork,
   },
   {
     id: "museum-003",
@@ -37,6 +51,14 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 40.7794,
     longitude: -73.9632,
     artwork_count: 4,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-003",
+      artwork_title: "델라웨어 강을 건너는 워싱턴 (Washington Crossing the Delaware)",
+      // 기존 Vermeer Young Woman with a Water Jug 이미지(metmuseum.org)가 404 응답으로 교체
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
+    } satisfies FeaturedArtwork,
   },
   {
     id: "museum-004",
@@ -48,6 +70,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 48.8606,
     longitude: 2.3376,
     artwork_count: 3,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-004",
+      artwork_title: "모나리자 (Mona Lisa)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+    } satisfies FeaturedArtwork,
   },
   {
     id: "museum-005",
@@ -59,6 +88,9 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 37.5797,
     longitude: 126.977,
     artwork_count: 2,
+    image_url: null,
+    // 한국 근현대 작품(이중섭 「황소」 등)은 저작권 이슈로 Wikimedia Commons에 호스팅되지 않음 → 이니셜 폴백
+    featured_artwork: null,
   },
   {
     id: "museum-006",
@@ -70,6 +102,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 43.7678,
     longitude: 11.2553,
     artwork_count: 2,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-006",
+      artwork_title: "비너스의 탄생 (The Birth of Venus)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
+    } satisfies FeaturedArtwork,
   },
 ];
 

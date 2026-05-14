@@ -5,11 +5,12 @@ export type CountryMapData = {
   /** ISO 3166-1 alpha-2 국가 코드 */
   country_code: string;
   /** 국가명 (한국어) */
-  country_name_ko: string;
+  country_name_ko?: string;
   /** 국가명 (영어) */
-  country_name_en: string;
+  country_name_en?: string;
   /** 해당 국가에 소장된 작품 수 */
   artwork_count: number;
+  museum_count: number; // minimum: 1 (서버 HAVING 조건으로 0인 국가는 응답에 미포함) — PENDING_BE: GET /api/v1/map/countries (v1.4.0 spec)
   /** 국가 대표 위도 */
   latitude: number;
   /** 국가 대표 경도 */
