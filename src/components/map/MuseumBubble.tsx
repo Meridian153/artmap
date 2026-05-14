@@ -72,12 +72,16 @@ export function MuseumBubble({ museum, opacity = 1, onClick }: MuseumBubbleProps
           }}
         >
           {museum.featured_artwork ? (
+            // unoptimized: 외부 이미지를 브라우저에서 직접 fetch (Next.js 최적화 프록시 우회)
+            // Wikimedia 등 일부 호스트가 Next.js 서버의 fetch 요청을 거부하는 문제 회피
+            // BE가 자체 CDN/이미지 호스팅 제공 시 재검토 대상
             <Image
               src={museum.featured_artwork.image_url} // PENDING_BE: featured_artwork.image_url
               alt={museum.featured_artwork.artwork_title}
               fill
               className="object-cover"
               sizes="56px"
+              unoptimized
             />
           ) : (
             <div className="bg-muted text-muted-foreground absolute inset-0 flex items-center justify-center text-sm font-semibold">
