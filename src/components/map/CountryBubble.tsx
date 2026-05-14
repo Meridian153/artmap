@@ -90,12 +90,18 @@ export function CountryBubble({ data, maxCount, opacity = 1, onClick }: CountryB
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           title={`${data.country_name_ko ?? data.country_code} (${data.country_name_en ?? ""})`}
-          className="flex cursor-pointer items-center justify-center rounded-full bg-blue-500/70 font-semibold text-white transition-[opacity,transform] duration-200 hover:scale-110 hover:bg-blue-500/90"
+          className="flex cursor-pointer items-center justify-center rounded-full bg-blue-500/70 font-semibold text-white hover:scale-110 hover:bg-blue-500/90"
           style={{
             width: size,
             height: size,
             fontSize: fontRadius * 0.35,
             opacity,
+            // 등장(opacity=1): transform만 200ms / 퇴장(opacity=0): opacity 300ms 페이드 아웃 추가
+            transition:
+              opacity === 1
+                ? "transform 200ms ease-out"
+                : "transform 200ms ease-out, opacity 300ms ease-out",
+            pointerEvents: opacity === 0 ? "none" : "auto",
             ...(isHovered && {
               boxShadow: "0 0 12px 4px rgba(59,130,246,0.5)",
             }),

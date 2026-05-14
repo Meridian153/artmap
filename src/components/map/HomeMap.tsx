@@ -1,4 +1,4 @@
-// 홈 페이지 전용 지도 컴포넌트 — 줌 임계값에 따라 국가 버블과 미술관 버블이 크로스페이드되는 세계 지도
+// 홈 페이지 전용 지도 컴포넌트 — 줌 임계값에 따라 국가 버블과 미술관 버블이 순차 페이드로 전환되는 세계 지도
 
 "use client";
 
@@ -13,24 +13,15 @@ import { getMapCountries, getMuseums } from "@/lib/api";
 import type { CountryMapData } from "@/types/map";
 import type { MuseumSummary } from "@/types/museum";
 
-/** 줌 임계값 — 국가 버블 페이드 아웃 시작 */
-const ZOOM_CROSSFADE_START = 5;
-/** 줌 임계값 — 미술관 버블 페이드 인 완료 */
-const ZOOM_CROSSFADE_END = 6;
+/** 줌 임계값 — 이상이면 미술관 버블 모드 진입 */
+const ZOOM_MUSEUM_ENTER = 6;
+/** 줌 임계값 — 미만이면 국가 버블 모드 진입 (5≤z<6 구간은 히스테리시스로 현재 상태 유지) */
+const ZOOM_COUNTRY_ENTER = 5;
+/** 페이드 아웃 지속 시간 (ms) — CountryBubble·MuseumBubble의 opacity transition 길이와 동일해야 함 */
+const FADE_OUT_MS = 300;
 
-/** 국가 버블 불투명도 — z<5: 1, 5≤z<6: 선형 감소, z≥6: 0 */
-function calcCountryOpacity(zoom: number): number {
-  if (zoom < ZOOM_CROSSFADE_START) return 1;
-  if (zoom >= ZOOM_CROSSFADE_END) return 0;
-  return 1 - (zoom - ZOOM_CROSSFADE_START) / (ZOOM_CROSSFADE_END - ZOOM_CROSSFADE_START);
-}
-
-/** 미술관 버블 불투명도 — z<5: 0, 5≤z<6: 선형 증가, z≥6: 1 */
-function calcMuseumOpacity(zoom: number): number {
-  if (zoom < ZOOM_CROSSFADE_START) return 0;
-  if (zoom >= ZOOM_CROSSFADE_END) return 1;
-  return (zoom - ZOOM_CROSSFADE_START) / (ZOOM_CROSSFADE_END - ZOOM_CROSSFADE_START);
-}
+/** 버블 표시 4상태 머신 — country ↔ fading-out-country → museum ↔ fading-out-museum → country */
+type BubbleState = "country" | "fading-out-country" | "museum" | "fading-out-museum";
 
 // 홈 지도 컴포넌트 — 크로스페이드 기반 2단계 버블 시스템
 export function HomeMap() {
@@ -38,8 +29,10 @@ export function HomeMap() {
   const [countries, setCountries] = useState<CountryMapData[]>([]);
   // 전 세계 미술관 목록 — 마운트 시 한 번만 로드
   const [allMuseums, setAllMuseums] = useState<MuseumSummary[]>([]);
-  // 현재 지도 시점 — 줌 레벨 기반 크로스페이드에 사용
+  // 현재 지도 시점 — 줌 레벨 기반 상태 전이 트리거
   const [viewState, setViewState] = useState({ longitude: 0, latitude: 20, zoom: 2 });
+  // 버블 표시 상태 — 순차 페이드 동작 제어
+  const [bubbleState, setBubbleState] = useState<BubbleState>("country");
   // 현재 선택된 국가 코드 — 우측 하단 배지 표시용
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(null);
   // 데이터 로딩 상태
@@ -72,9 +65,34 @@ export function HomeMap() {
     );
   }, []);
 
-  // 지도 이동/줌 이벤트 — viewState 동기화
+  // 페이드 아웃 완료 타이머 — fading-out-* 상태에서 300ms 후 다음 완료 상태로 전이
+  // 별도 effect로 분리하여 상태 변경 시 cleanup이 타이머를 정확히 cancel하도록 보장 (timer pitfall 회피)
+  useEffect(() => {
+    if (bubbleState === "fading-out-country") {
+      const t = setTimeout(() => setBubbleState("museum"), FADE_OUT_MS);
+      return () => clearTimeout(t);
+    }
+    if (bubbleState === "fading-out-museum") {
+      const t = setTimeout(() => setBubbleState("country"), FADE_OUT_MS);
+      return () => clearTimeout(t);
+    }
+  }, [bubbleState]);
+
+  // 지도 이동/줌 이벤트 — viewState 동기화 및 줌 임계값 교차 시 버블 상태 전이 트리거
+  // 페이드 중 반대 방향 줌이 들어오면 즉시 원래 상태로 복귀하여 jitter 방지
+  // setState-in-effect 안티패턴 회피를 위해 effect 대신 이벤트 핸들러에서 상태 전이 처리
   function handleMove(evt: ViewStateChangeEvent) {
     setViewState(evt.viewState);
+    const z = evt.viewState.zoom;
+    setBubbleState((prev) => {
+      if (z >= ZOOM_MUSEUM_ENTER && prev === "country") return "fading-out-country";
+      if (z < ZOOM_COUNTRY_ENTER && prev === "museum") return "fading-out-museum";
+      // 페이드 중 줌 아웃 → 국가 화면으로 즉시 복귀
+      if (z < ZOOM_COUNTRY_ENTER && prev === "fading-out-country") return "country";
+      // 페이드 중 줌 인 → 미술관 화면으로 즉시 복귀
+      if (z >= ZOOM_MUSEUM_ENTER && prev === "fading-out-museum") return "museum";
+      return prev;
+    });
   }
 
   // 국가 버블 클릭 핸들러 — flyTo 및 선택 국가 업데이트만 수행 (API 재호출 없음)
@@ -113,9 +131,10 @@ export function HomeMap() {
     1,
   );
 
-  // 현재 줌 레벨 기반 크로스페이드 불투명도
-  const countryOpacity = calcCountryOpacity(viewState.zoom);
-  const museumOpacity = calcMuseumOpacity(viewState.zoom);
+  // 버블 표시 상태 기반 불투명도 — 완료 상태에서만 1, 그 외엔 0
+  // 페이드 아웃은 CSS transition이 opacity 1→0을 부드럽게 보간하여 처리
+  const countryOpacity = bubbleState === "country" ? 1 : 0;
+  const museumOpacity = bubbleState === "museum" ? 1 : 0;
 
   // 로딩 중 표시
   if (loading) {
@@ -138,29 +157,27 @@ export function HomeMap() {
   return (
     <div className="relative h-full w-full">
       <MapView ref={mapRef} onMove={handleMove}>
-        {/* 국가 버블 — opacity > 0 일 때만 렌더링 (클릭 영역 방지) */}
-        {countryOpacity > 0 &&
-          countries.map((country) => (
-            <CountryBubble
-              key={country.country_code}
-              data={country}
-              maxCount={maxMuseumCount}
-              zoom={viewState.zoom}
-              opacity={countryOpacity}
-              onClick={handleBubbleClick}
-            />
-          ))}
+        {/* 국가 버블 — 항상 렌더링하여 페이드 아웃 동안 DOM에 유지 (클릭은 opacity=0일 때 pointer-events:none으로 차단) */}
+        {countries.map((country) => (
+          <CountryBubble
+            key={country.country_code}
+            data={country}
+            maxCount={maxMuseumCount}
+            zoom={viewState.zoom}
+            opacity={countryOpacity}
+            onClick={handleBubbleClick}
+          />
+        ))}
 
-        {/* 미술관 버블 — opacity > 0 일 때만 렌더링 (클릭 영역 방지) */}
-        {museumOpacity > 0 &&
-          allMuseums.map((museum) => (
-            <MuseumBubble
-              key={museum.id}
-              museum={museum}
-              opacity={museumOpacity}
-              onClick={handleMuseumClick}
-            />
-          ))}
+        {/* 미술관 버블 — 항상 렌더링하여 페이드 아웃 동안 DOM에 유지 */}
+        {allMuseums.map((museum) => (
+          <MuseumBubble
+            key={museum.id}
+            museum={museum}
+            opacity={museumOpacity}
+            onClick={handleMuseumClick}
+          />
+        ))}
       </MapView>
 
       {/* "전체 지도 보기" 버튼 — zoom >= 4일 때만 표시 */}

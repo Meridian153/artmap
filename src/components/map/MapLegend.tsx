@@ -16,14 +16,14 @@ export function MapLegend({ zoom = 3 }: MapLegendProps) {
       {/* grid 스태킹 — 두 텍스트를 같은 셀에 겹쳐 크로스페이드 구현 */}
       <div className="border-border grid rounded-full border bg-white/60 px-4 py-1.5 text-[13px] leading-snug shadow-sm backdrop-blur-[12px] max-sm:text-[12px] dark:bg-black/60">
         <span
-          className="text-foreground col-start-1 row-start-1 whitespace-nowrap transition-opacity duration-300"
+          className="text-foreground col-start-1 row-start-1 text-center whitespace-nowrap transition-opacity duration-300"
           style={{ opacity: isMuseumZoom ? 0 : 1 }}
           aria-hidden={isMuseumZoom}
         >
           각 버블의 숫자는 해당 국가에 ArtMap이 수록한 미술관의 개수입니다.
         </span>
         <span
-          className="text-foreground col-start-1 row-start-1 whitespace-nowrap transition-opacity duration-300"
+          className="text-foreground col-start-1 row-start-1 text-center whitespace-nowrap transition-opacity duration-300"
           style={{ opacity: isMuseumZoom ? 1 : 0 }}
           aria-hidden={!isMuseumZoom}
         >

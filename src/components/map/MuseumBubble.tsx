@@ -57,12 +57,18 @@ export function MuseumBubble({ museum, opacity = 1, onClick }: MuseumBubbleProps
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           title={museum.name_ko}
-          className="relative cursor-pointer overflow-hidden transition-[opacity,transform,box-shadow] duration-200 hover:scale-105 hover:shadow-[0_0_12px_4px_rgba(99,102,241,0.5)]"
+          className="relative cursor-pointer overflow-hidden hover:scale-105 hover:shadow-[0_0_12px_4px_rgba(99,102,241,0.5)]"
           style={{
             width: BUBBLE_SIZE,
             height: BUBBLE_SIZE,
             borderRadius: 12,
             opacity,
+            // 등장(opacity=1): transform/box-shadow만 200ms / 퇴장(opacity=0): opacity 300ms 페이드 아웃 추가
+            transition:
+              opacity === 1
+                ? "transform 200ms ease-out, box-shadow 200ms ease-out"
+                : "transform 200ms ease-out, box-shadow 200ms ease-out, opacity 300ms ease-out",
+            pointerEvents: opacity === 0 ? "none" : "auto",
           }}
         >
           {museum.featured_artwork ? (
