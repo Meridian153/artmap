@@ -31,6 +31,13 @@ export type PlaceInfo = {
   admission: Admission;
 };
 
+/** 미술관 대표 작품 (MuseumSummary.featured_artwork에 포함됨) */
+export type FeaturedArtwork = {
+  artwork_id: string;
+  artwork_title: string;
+  image_url: string;
+};
+
 /** 미술관 목록 카드 (GET /museums 응답의 data 항목) */
 export type MuseumSummary = {
   /** 미술관 UUID */
@@ -51,6 +58,8 @@ export type MuseumSummary = {
   longitude: number;
   /** 소장 작품 수 */
   artwork_count: number;
+  image_url: string | null; // PENDING_BE: GET /api/v1/museums (v1.4.0 spec)
+  featured_artwork: FeaturedArtwork | null; // PENDING_BE: GET /api/v1/museums (v1.4.0 spec)
 };
 
 /** 미술관 상세 (GET /museums/{id} 응답) */

@@ -1,7 +1,7 @@
 // Mock 미술관 데이터 — 개발/테스트용 실제 미술관 기반 샘플 데이터
 // 새 Types(API 반환 구조와 1:1 일치)에 맞춰 정합화됨.
 
-import type { MuseumSummary, MuseumDetail } from "@/types/museum";
+import type { FeaturedArtwork, MuseumSummary, MuseumDetail } from "@/types/museum";
 
 /** 미술관 목록 Mock 데이터 (GET /museums) */
 export const mockMuseums: MuseumSummary[] = [
@@ -15,6 +15,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 48.86,
     longitude: 2.3266,
     artwork_count: 2,
+    image_url: null, // PENDING_BE: image_url — GET /api/v1/museums
+    featured_artwork: {
+      artwork_id: "artwork-001",
+      artwork_title: "수련 (Water Lilies)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/800px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg",
+    } satisfies FeaturedArtwork, // PENDING_BE: featured_artwork — GET /api/v1/museums
   },
   {
     id: "museum-002",
@@ -26,6 +33,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 52.3584,
     longitude: 4.8811,
     artwork_count: 3,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-002",
+      artwork_title: "별이 빛나는 밤 (The Starry Night)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/800px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+    } satisfies FeaturedArtwork,
   },
   {
     id: "museum-003",
@@ -37,6 +51,12 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 40.7794,
     longitude: -73.9632,
     artwork_count: 4,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-003",
+      artwork_title: "물 항아리를 든 여인 (Young Woman with a Water Jug)",
+      image_url: "https://images.metmuseum.org/CRDImages/ep/original/DP251139.jpg",
+    } satisfies FeaturedArtwork,
   },
   {
     id: "museum-004",
@@ -48,6 +68,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 48.8606,
     longitude: 2.3376,
     artwork_count: 3,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-004",
+      artwork_title: "모나리자 (Mona Lisa)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/800px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+    } satisfies FeaturedArtwork,
   },
   {
     id: "museum-005",
@@ -59,6 +86,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 37.5797,
     longitude: 126.977,
     artwork_count: 2,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-005",
+      artwork_title: "황소 (Bull)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Lee_Jung-seob_-_Bull.jpg/800px-Lee_Jung-seob_-_Bull.jpg",
+    } satisfies FeaturedArtwork,
   },
   {
     id: "museum-006",
@@ -70,6 +104,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 43.7678,
     longitude: 11.2553,
     artwork_count: 2,
+    image_url: null,
+    featured_artwork: {
+      artwork_id: "artwork-006",
+      artwork_title: "비너스의 탄생 (The Birth of Venus)",
+      image_url:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/1280px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
+    } satisfies FeaturedArtwork,
   },
 ];
 
