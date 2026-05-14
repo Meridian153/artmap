@@ -32,11 +32,22 @@ export const COUNTRY_COORDS: Record<string, { lng: number; lat: number }> = {
 const RADIUS_MIN = 18;
 const RADIUS_MAX = 48;
 
+/** 폰트 크기 계산 전용 반지름 범위 — 버블 크기 변경과 독립적으로 유지 */
+const FONT_RADIUS_MIN = 24;
+const FONT_RADIUS_MAX = 64;
+
 /** museum_count 기반 로그 스케일 반지름 계산 */
 function calcBubbleRadius(count: number, maxCount: number): number {
   if (maxCount <= 0 || count <= 0) return RADIUS_MIN;
   const ratio = Math.log(count + 1) / Math.log(maxCount + 1);
   return RADIUS_MIN + ratio * (RADIUS_MAX - RADIUS_MIN);
+}
+
+/** 폰트 크기 전용 반지름 계산 — 버블 크기와 독립 */
+function calcFontRadius(count: number, maxCount: number): number {
+  if (maxCount <= 0 || count <= 0) return FONT_RADIUS_MIN;
+  const ratio = Math.log(count + 1) / Math.log(maxCount + 1);
+  return FONT_RADIUS_MIN + ratio * (FONT_RADIUS_MAX - FONT_RADIUS_MIN);
 }
 
 // 국가별 버블 마커 컴포넌트
@@ -54,6 +65,7 @@ export function CountryBubble({ data, maxCount, opacity = 1, onClick }: CountryB
     maxCount,
   );
   const size = radius * 2;
+  const fontRadius = calcFontRadius(data.museum_count, maxCount);
 
   const handleMouseEnter = () => {
     if (buttonRef.current) {
@@ -82,7 +94,7 @@ export function CountryBubble({ data, maxCount, opacity = 1, onClick }: CountryB
           style={{
             width: size,
             height: size,
-            fontSize: radius * 0.35,
+            fontSize: fontRadius * 0.35,
             opacity,
             ...(isHovered && {
               boxShadow: "0 0 12px 4px rgba(59,130,246,0.5)",
