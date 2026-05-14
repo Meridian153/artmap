@@ -28,9 +28,9 @@ export const COUNTRY_COORDS: Record<string, { lng: number; lat: number }> = {
   AT: { lng: 14.55, lat: 47.52 },
 };
 
-/** 버블 최소/최대 반지름 (px) — width/height = radius * 2 (48~128px) */
-const RADIUS_MIN = 24;
-const RADIUS_MAX = 64;
+/** 버블 최소/최대 반지름 (px) — width/height = radius * 2 (36~96px) */
+const RADIUS_MIN = 18;
+const RADIUS_MAX = 48;
 
 /** museum_count 기반 로그 스케일 반지름 계산 */
 function calcBubbleRadius(count: number, maxCount: number): number {
