@@ -66,8 +66,8 @@ export async function GET(
         aw.year_created,
         aw.image_url,
         aw.status,
-        (ARRAY_AGG(i.name_ko))[1]  AS museum_name_ko,
-        (ARRAY_AGG(i.name_en))[1]  AS museum_name_en,
+        MAX(i.name_ko)  AS museum_name_ko,
+        MAX(i.name_en)  AS museum_name_en,
         COUNT(*) OVER() AS total_count
       FROM artworks aw
       JOIN artwork_artists aa
