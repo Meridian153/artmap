@@ -66,8 +66,8 @@ export async function GET(
         aw.year_created,
         aw.image_url,
         aw.status,
-        i.name_ko  AS museum_name_ko,
-        i.name_en  AS museum_name_en,
+        (ARRAY_AGG(i.name_ko))[1]  AS museum_name_ko,
+        (ARRAY_AGG(i.name_en))[1]  AS museum_name_en,
         COUNT(*) OVER() AS total_count
       FROM artworks aw
       JOIN artwork_artists aa
@@ -76,6 +76,7 @@ export async function GET(
         ON al.artwork_id = aw.id AND al.end_date IS NULL
       LEFT JOIN places p ON p.id = al.place_id
       LEFT JOIN institutions i ON i.id = p.institution_id
+      GROUP BY aw.id
       ORDER BY aw.year_created ASC NULLS LAST
       LIMIT $2 OFFSET $3
       `,
