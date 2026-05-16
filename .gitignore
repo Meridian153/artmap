@@ -49,3 +49,6 @@ next-env.d.ts
 
 # Claude Code working directory
 .claude/
+
+#워크플로우의 작업용 임시 산출물
+plan.md
