@@ -26,7 +26,7 @@ export type MapViewProps = {
 };
 
 /** OpenFreeMap 타일 스타일 URL */
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 
 // 재사용 가능한 지도 래퍼 컴포넌트 — forwardRef로 MapRef 접근 지원
 export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
