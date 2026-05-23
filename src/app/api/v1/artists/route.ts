@@ -19,12 +19,12 @@ type ArtistRow = {
   thumbnail_url: string | null;
   artwork_count: number;
   movements: Array<{ name_ko: string; name_en: string }> | null;
+  top_museum_name_ko: string | null;
   total_count: number;
 };
 
 // ─── 정렬 기준 매핑 ───────────────────────────────────────────────────────────
 
-// SQL 인젝션 방지를 위해 허용 값만 매핑
 const SORT_MAP: Record<string, string> = {
   name_asc: "ad.name_en ASC",
   birth_year_asc: "ad.birth_year ASC NULLS LAST",
@@ -44,11 +44,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const perPage = parseIntParam(sp.get("per_page"), 20, 1, 100);
     const offset = (page - 1) * perPage;
 
-    // 허용된 sort 값이 아니면 기본값으로 대체
     const orderBy = SORT_MAP[sort] ?? SORT_MAP["name_asc"];
 
-    // 1단계: 필터 조건에 맞는 화가 ID 추출 (movement 필터 포함)
-    // 2단계: 해당 화가의 artwork_count, movements 집계
     const { rows } = await pool.query<ArtistRow>(
       `
       WITH filtered_ids AS (
@@ -56,7 +53,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         FROM artists a
         LEFT JOIN artist_movements arm ON arm.artist_id = a.id
         LEFT JOIN art_movements   am  ON am.id = arm.movement_id
-        WHERE ($1::text IS NULL OR am.name_en ILIKE $1)
+        WHERE a.deleted_at IS NULL
+          AND ($1::text IS NULL OR am.name_en ILIKE $1)
           AND ($2::text IS NULL OR a.nationality ILIKE '%' || $2 || '%')
       ),
       artist_data AS (
@@ -72,6 +70,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         FROM artists a
         JOIN filtered_ids fi ON fi.id = a.id
         LEFT JOIN artwork_artists aa ON aa.artist_id = a.id
+        LEFT JOIN artworks aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
         GROUP BY
           a.id, a.name_ko, a.name_en, a.birth_year, a.death_year,
           a.nationality, a.thumbnail_url
@@ -82,18 +81,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           JSON_AGG(
             JSON_BUILD_OBJECT('name_ko', am.name_ko, 'name_en', am.name_en)
             ORDER BY am.name_en
-          ) AS movements
+          ) FILTER (WHERE am.id IS NOT NULL) AS movements
         FROM artist_movements arm
         JOIN art_movements am ON am.id = arm.movement_id
         WHERE arm.artist_id IN (SELECT id FROM filtered_ids)
         GROUP BY arm.artist_id
+      ),
+      top_museum AS (
+        SELECT DISTINCT ON (aa.artist_id)
+          aa.artist_id,
+          i.name_ko AS museum_name_ko
+        FROM artwork_artists aa
+        JOIN artwork_ownerships ao ON ao.artwork_id = aa.artwork_id
+        JOIN institutions i ON i.id = ao.institution_id AND i.deleted_at IS NULL
+        JOIN artworks aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
+        WHERE aa.artist_id IN (SELECT id FROM filtered_ids)
+        GROUP BY aa.artist_id, i.id, i.name_ko
+        ORDER BY aa.artist_id, COUNT(*) DESC
       )
       SELECT
         ad.*,
         COALESCE(ma.movements, '[]'::json) AS movements,
+        tm.museum_name_ko                  AS top_museum_name_ko,
         COUNT(*) OVER()                    AS total_count
       FROM artist_data ad
       LEFT JOIN movements_agg ma ON ma.artist_id = ad.id
+      LEFT JOIN top_museum tm ON tm.artist_id = ad.id
       ORDER BY ${orderBy}
       LIMIT $3 OFFSET $4
       `,
@@ -109,9 +122,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       birth_year: row.birth_year,
       death_year: row.death_year,
       nationality: row.nationality,
-      thumbnail_url: row.thumbnail_url,
+      image_url: row.thumbnail_url,
       artwork_count: row.artwork_count,
       movements: row.movements ?? [],
+      top_museum_name_ko: row.top_museum_name_ko ?? null,
     }));
 
     return NextResponse.json({ data, total, page, per_page: perPage });

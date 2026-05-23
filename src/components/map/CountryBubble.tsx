@@ -60,12 +60,14 @@ export function CountryBubble({ data, maxCount, opacity = 1, onClick }: CountryB
   // 좌표가 없는 국가는 렌더링하지 않음
   if (!coords) return null;
 
+  const museumCount = data.museum_count ?? 0;
+
   const radius = calcBubbleRadius(
-    data.museum_count, // PENDING_BE: museum_count — GET /api/v1/map/countries
+    museumCount, // PENDING_BE: museum_count — GET /api/v1/map/countries
     maxCount,
   );
   const size = radius * 2;
-  const fontRadius = calcFontRadius(data.museum_count, maxCount);
+  const fontRadius = calcFontRadius(museumCount, maxCount);
 
   const handleMouseEnter = () => {
     if (buttonRef.current) {
@@ -107,7 +109,7 @@ export function CountryBubble({ data, maxCount, opacity = 1, onClick }: CountryB
             }),
           }}
         >
-          {data.museum_count /* PENDING_BE: museum_count */}
+          {museumCount || data.artwork_count /* PENDING_BE: museum_count fallback */}
         </button>
 
         {/* 호버 라벨 — 데스크톱 hover 전용, 모바일 대응은 별도 PR */}

@@ -27,6 +27,10 @@ type ArtistDetailRow = {
   }> | null;
 };
 
+type TopMuseumRow = {
+  museum_name_ko: string;
+};
+
 // ─── GET 핸들러 ───────────────────────────────────────────────────────────────
 
 export async function GET(
@@ -65,7 +69,7 @@ export async function GET(
       FROM artists a
       LEFT JOIN artist_movements arm ON arm.artist_id = a.id
       LEFT JOIN art_movements    am  ON am.id = arm.movement_id
-      WHERE a.id = $1
+      WHERE a.id = $1 AND a.deleted_at IS NULL
       GROUP BY
         a.id, a.name_ko, a.name_en, a.birth_year, a.death_year,
         a.nationality, a.bio_ko, a.bio_en, a.thumbnail_url
@@ -79,6 +83,23 @@ export async function GET(
 
     const row = rows[0];
 
+    const { rows: museumRows } = await pool.query<TopMuseumRow>(
+      `
+      SELECT i.name_ko AS museum_name_ko
+      FROM artwork_artists aa
+      JOIN artwork_ownerships ao ON ao.artwork_id = aa.artwork_id
+      JOIN institutions i ON i.id = ao.institution_id AND i.deleted_at IS NULL
+      JOIN artworks aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
+      WHERE aa.artist_id = $1
+      GROUP BY i.id, i.name_ko
+      ORDER BY COUNT(*) DESC
+      LIMIT 1
+      `,
+      [id],
+    );
+
+    const topMuseumNameKo = museumRows.length > 0 ? museumRows[0].museum_name_ko : null;
+
     return NextResponse.json({
       id: row.id,
       name_ko: row.name_ko,
@@ -88,8 +109,9 @@ export async function GET(
       nationality: row.nationality,
       bio_ko: row.bio_ko,
       bio_en: row.bio_en,
-      thumbnail_url: row.thumbnail_url,
+      image_url: row.thumbnail_url,
       movements: row.movements ?? [],
+      top_museum_name_ko: topMuseumNameKo,
     });
   } catch (error) {
     console.error(`[GET ${instance}]`, error);

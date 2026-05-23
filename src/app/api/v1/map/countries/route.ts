@@ -13,6 +13,7 @@ import { createHash } from "crypto";
 type CountryRow = {
   country_code: string;
   artwork_count: number;
+  museum_count: number;
   latitude: number;
   longitude: number;
 };
@@ -27,11 +28,14 @@ export async function GET(): Promise<NextResponse> {
       SELECT
         i.country_code,
         COUNT(DISTINCT ao.artwork_id)::integer AS artwork_count,
+        COUNT(DISTINCT i.id)::integer          AS museum_count,
         AVG(p.latitude)::float                 AS latitude,
         AVG(p.longitude)::float                AS longitude
       FROM institutions i
       JOIN artwork_ownerships ao ON ao.institution_id = i.id
-      JOIN places p              ON p.institution_id  = i.id
+      JOIN artworks aw           ON aw.id = ao.artwork_id AND aw.deleted_at IS NULL
+      JOIN places p              ON p.institution_id  = i.id AND p.deleted_at IS NULL
+      WHERE i.deleted_at IS NULL
       GROUP BY i.country_code
       HAVING COUNT(DISTINCT ao.artwork_id) > 0
       ORDER BY artwork_count DESC
@@ -43,6 +47,7 @@ export async function GET(): Promise<NextResponse> {
       country_name_ko: getCountryName(row.country_code).ko,
       country_name_en: getCountryName(row.country_code).en,
       artwork_count: row.artwork_count,
+      museum_count: row.museum_count,
       latitude: row.latitude,
       longitude: row.longitude,
     }));

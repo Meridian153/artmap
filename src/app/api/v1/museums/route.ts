@@ -19,6 +19,10 @@ type MuseumRow = {
   latitude: number;
   longitude: number;
   artwork_count: number;
+  image_url: string | null;
+  featured_artwork_id: string | null;
+  featured_artwork_title: string | null;
+  featured_artwork_image: string | null;
   total_count: number;
 };
 
@@ -34,12 +38,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const perPage = parseIntParam(sp.get("per_page"), 20, 1, 100);
     const offset = (page - 1) * perPage;
 
-    // country_code 길이 유효성 검사
     if (country !== null && (country.length < 2 || country.length > 2)) {
       return NextResponse.json({ data: [], total: 0, page, per_page: perPage }, { status: 200 });
     }
 
-    // CTE를 사용해 필터 후 window function으로 total_count 집계
     const { rows } = await pool.query<MuseumRow>(
       `
       WITH base AS (
@@ -49,22 +51,41 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           i.name_en,
           i.institution_type,
           i.country_code,
+          i.image_url,
           p.city,
           p.latitude::float,
           p.longitude::float,
-          COUNT(ao.artwork_id)::integer AS artwork_count
+          COUNT(DISTINCT ao.artwork_id)::integer AS artwork_count
         FROM institutions i
-        JOIN places p              ON p.institution_id = i.id
+        JOIN places p ON p.institution_id = i.id AND p.deleted_at IS NULL
         LEFT JOIN artwork_ownerships ao ON ao.institution_id = i.id
-        WHERE ($1::text IS NULL OR i.country_code = $1)
+        LEFT JOIN artworks aw ON aw.id = ao.artwork_id AND aw.deleted_at IS NULL
+        WHERE i.deleted_at IS NULL
+          AND ($1::text IS NULL OR i.country_code = $1)
           AND ($2::text IS NULL OR p.city ILIKE '%' || $2 || '%')
         GROUP BY
           i.id, i.name_ko, i.name_en, i.institution_type,
-          i.country_code, p.city, p.latitude, p.longitude
+          i.country_code, i.image_url, p.city, p.latitude, p.longitude
+      ),
+      featured AS (
+        SELECT DISTINCT ON (ifa.institution_id)
+          ifa.institution_id,
+          aw.id        AS artwork_id,
+          aw.title_ko  AS artwork_title,
+          aw.image_url AS artwork_image
+        FROM institution_featured_artworks ifa
+        JOIN artworks aw ON aw.id = ifa.artwork_id AND aw.deleted_at IS NULL
+        ORDER BY ifa.institution_id, ifa.display_order ASC
       )
-      SELECT *, COUNT(*) OVER() AS total_count
-      FROM   base
-      ORDER BY name_en ASC
+      SELECT
+        b.*,
+        f.artwork_id    AS featured_artwork_id,
+        f.artwork_title AS featured_artwork_title,
+        f.artwork_image AS featured_artwork_image,
+        COUNT(*) OVER() AS total_count
+      FROM base b
+      LEFT JOIN featured f ON f.institution_id = b.id
+      ORDER BY b.name_en ASC
       LIMIT  $3 OFFSET $4
       `,
       [country, city, perPage, offset],
@@ -82,6 +103,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       latitude: row.latitude,
       longitude: row.longitude,
       artwork_count: row.artwork_count,
+      image_url: row.image_url ?? null,
+      featured_artwork: row.featured_artwork_id
+        ? {
+            artwork_id: row.featured_artwork_id,
+            artwork_title: row.featured_artwork_title,
+            image_url: row.featured_artwork_image,
+          }
+        : null,
     }));
 
     return NextResponse.json({ data, total, page, per_page: perPage });
