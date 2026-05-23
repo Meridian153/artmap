@@ -120,7 +120,7 @@ export function MuseumArtworkGallery({ artworks }: MuseumArtworkGalleryProps) {
                         src={artwork.image_url}
                         alt={artwork.title_ko || artwork.title_en}
                         fill
-                        sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                         className="object-cover"
                       />
                     </div>
@@ -136,7 +136,7 @@ export function MuseumArtworkGallery({ artworks }: MuseumArtworkGalleryProps) {
                     <p className="text-muted-foreground mt-1 text-xs">
                       {artwork.artist?.name_ko ?? artwork.artist?.name_en ?? "작가 정보 없음"}
                     </p>
-                    {artwork.year_created && (
+                    {artwork.year_created !== null && (
                       <p className="text-muted-foreground text-xs">{artwork.year_created}</p>
                     )}
                   </div>
