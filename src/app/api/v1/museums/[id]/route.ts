@@ -18,6 +18,7 @@ type MuseumDetailRow = {
   description_ko: string | null;
   description_en: string | null;
   website: string | null;
+  image_url: string | null;
   place_name_ko: string | null;
   place_name_en: string | null;
   country: string;
@@ -29,6 +30,12 @@ type MuseumDetailRow = {
   admission: Record<string, unknown> | null;
 };
 
+type FeaturedRow = {
+  artwork_id: string;
+  artwork_title: string;
+  artwork_image: string | null;
+};
+
 // ─── GET 핸들러 ───────────────────────────────────────────────────────────────
 
 export async function GET(
@@ -38,7 +45,6 @@ export async function GET(
   const { id } = await params;
   const instance = `/api/v1/museums/${id}`;
 
-  // UUID 형식 검증
   if (!isValidUUID(id)) {
     return notFound(instance);
   }
@@ -55,6 +61,7 @@ export async function GET(
         i.description_ko,
         i.description_en,
         i.website,
+        i.image_url,
         p.name_ko    AS place_name_ko,
         p.name_en    AS place_name_en,
         p.country,
@@ -65,8 +72,8 @@ export async function GET(
         p.opening_hours,
         p.admission
       FROM institutions i
-      JOIN places p ON p.institution_id = i.id
-      WHERE i.id = $1
+      JOIN places p ON p.institution_id = i.id AND p.deleted_at IS NULL
+      WHERE i.id = $1 AND i.deleted_at IS NULL
       `,
       [id],
     );
@@ -77,6 +84,23 @@ export async function GET(
 
     const row = rows[0];
 
+    const { rows: featuredRows } = await pool.query<FeaturedRow>(
+      `
+      SELECT
+        aw.id        AS artwork_id,
+        aw.title_ko  AS artwork_title,
+        aw.image_url AS artwork_image
+      FROM institution_featured_artworks ifa
+      JOIN artworks aw ON aw.id = ifa.artwork_id AND aw.deleted_at IS NULL
+      WHERE ifa.institution_id = $1
+      ORDER BY ifa.display_order ASC
+      LIMIT 1
+      `,
+      [id],
+    );
+
+    const featured = featuredRows.length > 0 ? featuredRows[0] : null;
+
     return NextResponse.json({
       id: row.id,
       name_ko: row.name_ko,
@@ -86,6 +110,7 @@ export async function GET(
       description_ko: row.description_ko,
       description_en: row.description_en,
       website: row.website,
+      image_url: row.image_url ?? null,
       place: {
         name_ko: row.place_name_ko,
         name_en: row.place_name_en,
@@ -97,6 +122,13 @@ export async function GET(
         opening_hours: row.opening_hours,
         admission: row.admission,
       },
+      featured_artwork: featured
+        ? {
+            artwork_id: featured.artwork_id,
+            artwork_title: featured.artwork_title,
+            image_url: featured.artwork_image,
+          }
+        : null,
     });
   } catch (error) {
     console.error(`[GET ${instance}]`, error);
