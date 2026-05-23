@@ -8,34 +8,10 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ArtworkDetail } from "@/types/artwork";
 import { formatYearLabel } from "@/lib/format-year";
+import { STATUS_BADGE } from "@/lib/artwork-status";
 
 export type ArtworkHeroProps = {
   artwork: ArtworkDetail;
-};
-
-// 상태 배지 매핑 — 컴포넌트 외부에 정의해 렌더링마다 재생성 방지
-// 상태 의미가 강한 색이므로 시맨틱 토큰 대신 고정 색상 클래스 + dark: 짝 사용
-const STATUS_BADGE: Record<ArtworkDetail["status"], { bg: string; text: string; label: string }> = {
-  on_display: {
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    text: "text-emerald-800 dark:text-emerald-300",
-    label: "전시 중",
-  },
-  on_loan: {
-    bg: "bg-blue-100 dark:bg-blue-900/30",
-    text: "text-blue-800 dark:text-blue-300",
-    label: "대여 중",
-  },
-  in_storage: {
-    bg: "bg-zinc-100 dark:bg-zinc-800",
-    text: "text-zinc-800 dark:text-zinc-300",
-    label: "수장고 보관",
-  },
-  under_restoration: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    text: "text-amber-800 dark:text-amber-300",
-    label: "복원 중",
-  },
 };
 
 export function ArtworkHero({ artwork }: ArtworkHeroProps) {
