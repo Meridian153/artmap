@@ -1,6 +1,7 @@
 // 미술관 소장 작품 갤러리 — getMuseumArtworks를 호출해 작품 카드 그리드로 표시
 // async 서버 컴포넌트. 작품이 0개면 placeholder 메시지.
 
+import Image from "next/image";
 import Link from "next/link";
 import { getMuseumArtworks } from "@/lib/api";
 
@@ -25,10 +26,22 @@ export async function MuseumArtworkGallery({ museumId }: MuseumArtworkGalleryPro
           {artworks.map((artwork) => (
             <li key={artwork.id}>
               <Link href={`/artworks/${artwork.id}`} className="group block">
-                {/* 정사각형 썸네일 placeholder — next/image 미사용 */}
-                <div className="bg-muted text-muted-foreground flex aspect-square w-full items-center justify-center text-xs">
-                  이미지 준비 중
-                </div>
+                {/* image_url이 있으면 썸네일 이미지, 없으면 placeholder 표시 */}
+                {artwork.image_url ? (
+                  <div className="relative aspect-square w-full overflow-hidden rounded-md">
+                    <Image
+                      src={artwork.image_url}
+                      alt={artwork.title_ko || artwork.title_en}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-muted text-muted-foreground flex aspect-square w-full items-center justify-center text-xs">
+                    이미지 준비 중
+                  </div>
+                )}
                 <div className="mt-3">
                   <p className="text-foreground text-sm font-medium group-hover:underline">
                     {artwork.title_ko}
