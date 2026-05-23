@@ -36,8 +36,8 @@ export async function MuseumArtworkGallery({ museumId }: MuseumArtworkGalleryPro
                   <p className="text-muted-foreground mt-1 text-xs">
                     {artwork.artist?.name_ko ?? artwork.artist?.name_en ?? "작가 정보 없음"}
                   </p>
-                  {artwork.year_label && (
-                    <p className="text-muted-foreground text-xs">{artwork.year_label}</p>
+                  {artwork.year_created && (
+                    <p className="text-muted-foreground text-xs">{artwork.year_created}</p>
                   )}
                 </div>
               </Link>

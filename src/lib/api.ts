@@ -4,11 +4,7 @@
 import type { CountryMapData, ArtistCountryDistribution } from "@/types/map";
 import type { MuseumSummary, MuseumDetail } from "@/types/museum";
 import type { ArtistSummary, ArtistDetail } from "@/types/artist";
-import type {
-  ArtworkDetail,
-  ArtworkSummaryWithMuseum,
-  MuseumArtworkSummary,
-} from "@/types/artwork";
+import type { ArtworkDetail, ArtworkSummary, ArtworkSummaryWithMuseum } from "@/types/artwork";
 import type { SearchResult } from "@/types/search";
 import type { PaginatedResponse } from "@/types/common";
 import type { ProblemDetail } from "@/types/error";
@@ -168,21 +164,21 @@ export interface GetMuseumArtworksParams {
 export async function getMuseumArtworks(
   id: string,
   params?: GetMuseumArtworksParams,
-): Promise<{ data: MuseumArtworkSummary[]; total: number }> {
+): Promise<{ data: ArtworkSummary[]; total: number }> {
   if (USE_MOCK) {
     // ArtworkSummaryWithMuseum에는 museum_id가 없으므로 mockArtworkDetail.primary_museum.id로 매칭
-    // 결과는 MuseumArtworkSummary 형태(year_label/thumbnail_url)로 변환
+    // 결과는 ArtworkSummary 형태(year_created/image_url)로 변환
     const filtered = mockArtworks.filter(
       (aw) => mockArtworkDetail[aw.id]?.primary_museum?.id === id,
     );
-    const toMuseumSummary = (aw: (typeof mockArtworks)[number]): MuseumArtworkSummary => {
+    const toMuseumSummary = (aw: (typeof mockArtworks)[number]): ArtworkSummary => {
       const detail = mockArtworkDetail[aw.id];
       return {
         id: aw.id,
         title_ko: aw.title_ko,
         title_en: aw.title_en,
-        year_label: aw.year_created !== null ? String(aw.year_created) : null,
-        thumbnail_url: aw.image_url,
+        year_created: aw.year_created,
+        image_url: aw.image_url,
         status: aw.status,
         artist: detail?.artist
           ? {
@@ -199,10 +195,7 @@ export async function getMuseumArtworks(
     const paged = paginate(filtered, params?.page, params?.per_page);
     return { data: paged.data.map(toMuseumSummary), total: paged.total };
   }
-  return fetchApi<{ data: MuseumArtworkSummary[]; total: number }>(
-    `/museums/${id}/artworks`,
-    params,
-  );
+  return fetchApi<{ data: ArtworkSummary[]; total: number }>(`/museums/${id}/artworks`, params);
 }
 
 // ─── 화가 API ────────────────────────────────────────────────────────────────

@@ -12,32 +12,9 @@ export type ArtworkArtistRef = {
 };
 
 /**
- * 미술관 소장 목록 카드 (GET /museums/{id}/artworks 응답의 data 항목)
+ * 작품 목록 카드 (GET /museums/{id}/artworks 응답의 data 항목)
  *
- * 이 엔드포인트만 year_label, thumbnail_url 명칭으로 응답하므로 별도 타입을 유지함.
- */
-export type MuseumArtworkSummary = {
-  /** 작품 UUID */
-  id: string;
-  /** 작품명 (한국어) */
-  title_ko: string;
-  /** 작품명 (영어) */
-  title_en: string;
-  /** 제작 연도 표시용 문자열 — API가 year_created를 문자열로 직렬화 */
-  year_label: string | null;
-  /** 대표 이미지 URL — API가 image_url을 thumbnail_url 명칭으로 반환 */
-  thumbnail_url: string | null;
-  /** 전시 상태 */
-  status: ArtworkStatus;
-  /** 화가 정보 (없으면 null) */
-  artist: ArtworkArtistRef | null;
-};
-
-/**
- * 작품 카드 공통 형태 — 화가/미술관 정보를 포함하지 않는 최소 골격
- *
- * 어떤 엔드포인트도 이 형태 그대로 반환하지는 않으며, ArtworkSummaryWithMuseum의
- * 베이스 구조로만 사용됨.
+ * 명세 ArtworkSummary와 1:1 대응. 미술관 소장 목록 카드로 사용된다.
  */
 export type ArtworkSummary = {
   /** 작품 UUID */
@@ -52,15 +29,17 @@ export type ArtworkSummary = {
   image_url: string | null;
   /** 전시 상태 */
   status: ArtworkStatus;
+  /** 화가 정보 (없으면 null) */
+  artist: ArtworkArtistRef | null;
 };
 
 /**
  * 미술관명을 함께 반환하는 작품 카드
  * (GET /artworks, GET /artists/{id}/artworks 응답의 data 항목)
  *
- * museum_id는 반환되지 않으므로 미술관 링크는 불가능 (기술 부채 #2).
+ * 명세 ArtworkSummaryWithMuseum과 1:1 대응. artist 없이 미술관명을 포함한다.
  */
-export type ArtworkSummaryWithMuseum = ArtworkSummary & {
+export type ArtworkSummaryWithMuseum = Omit<ArtworkSummary, "artist"> & {
   /** 현재 소장 미술관명 (한국어) */
   museum_name_ko: string | null;
   /** 현재 소장 미술관명 (영어) */

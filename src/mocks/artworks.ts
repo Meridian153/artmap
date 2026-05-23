@@ -13,7 +13,8 @@ export const mockArtworks: ArtworkSummaryWithMuseum[] = [
     title_ko: "별이 빛나는 밤",
     title_en: "The Starry Night",
     year_created: 1889,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
     status: "on_display",
     museum_name_ko: "메트로폴리탄 미술관",
     museum_name_en: "The Metropolitan Museum of Art",
@@ -43,7 +44,8 @@ export const mockArtworks: ArtworkSummaryWithMuseum[] = [
     title_ko: "수련",
     title_en: "Water Lilies",
     year_created: 1906,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg",
     status: "on_display",
     museum_name_ko: "오르세 미술관",
     museum_name_en: "Musée d'Orsay",
@@ -73,7 +75,8 @@ export const mockArtworks: ArtworkSummaryWithMuseum[] = [
     title_ko: "모나리자",
     title_en: "Mona Lisa",
     year_created: 1503,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
     status: "on_display",
     museum_name_ko: "루브르 박물관",
     museum_name_en: "Musée du Louvre",
@@ -133,7 +136,8 @@ export const mockArtworks: ArtworkSummaryWithMuseum[] = [
     title_ko: "비너스의 탄생",
     title_en: "The Birth of Venus",
     year_created: 1485,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
     status: "on_display",
     museum_name_ko: "우피치 미술관",
     museum_name_en: "Galleria degli Uffizi",
