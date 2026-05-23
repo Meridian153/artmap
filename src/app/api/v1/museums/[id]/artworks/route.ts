@@ -39,9 +39,8 @@ export async function GET(
   }
 
   try {
-    // 미술관 존재 여부 확인
     const museumCheck = await pool.query<{ exists: boolean }>(
-      "SELECT EXISTS(SELECT 1 FROM institutions WHERE id = $1) AS exists",
+      "SELECT EXISTS(SELECT 1 FROM institutions WHERE id = $1 AND deleted_at IS NULL) AS exists",
       [id],
     );
     if (!museumCheck.rows[0].exists) {
@@ -53,12 +52,10 @@ export async function GET(
     const page = parseIntParam(sp.get("page"), 1, 1, 10000);
     const perPage = parseIntParam(sp.get("per_page"), 20, 1, 100);
 
-    // limit 우선 모드 vs 페이지네이션 모드
     const isLimitMode = limitParam !== null;
     const limit = isLimitMode ? parseIntParam(limitParam, 20, 1, 100) : perPage;
     const offset = isLimitMode ? 0 : (page - 1) * perPage;
 
-    // artwork_artists를 ROW_NUMBER로 중복 제거 (작품당 대표 화가 1명 선택)
     const { rows } = await pool.query<ArtworkRow>(
       `
       WITH artist_ranked AS (
@@ -71,13 +68,14 @@ export async function GET(
             PARTITION BY aa.artwork_id ORDER BY a.name_en ASC
           ) AS rn
         FROM artwork_artists aa
-        JOIN artists a ON a.id = aa.artist_id
+        JOIN artists a ON a.id = aa.artist_id AND a.deleted_at IS NULL
       ),
       owned AS (
         SELECT aw.*
         FROM artworks aw
         JOIN artwork_ownerships ao
           ON ao.artwork_id = aw.id AND ao.institution_id = $1
+        WHERE aw.deleted_at IS NULL
       )
       SELECT
         ow.id,
@@ -105,8 +103,8 @@ export async function GET(
       id: row.id,
       title_ko: row.title_ko,
       title_en: row.title_en,
-      year_label: row.year_created !== null ? String(row.year_created) : null,
-      thumbnail_url: row.image_url,
+      year_created: row.year_created,
+      image_url: row.image_url,
       status: row.status,
       artist:
         row.artist_id !== null
@@ -118,7 +116,12 @@ export async function GET(
           : null,
     }));
 
-    return NextResponse.json({ data, total });
+    return NextResponse.json({
+      data,
+      total,
+      page: isLimitMode ? null : page,
+      per_page: isLimitMode ? null : perPage,
+    });
   } catch (error) {
     console.error(`[GET ${instance}]`, error);
     return internalServerError(instance);
