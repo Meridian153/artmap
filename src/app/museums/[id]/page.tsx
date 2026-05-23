@@ -1,11 +1,12 @@
 // 미술관 상세 페이지 — 특정 미술관의 정보와 소장 작품 목록 표시
 // 연결 API:
 //   GET /museums/{id}
-//   GET /museums/{id}/artworks (MuseumArtworkGallery 내부)
+//   GET /museums/{id}/artworks
 
 import { notFound } from "next/navigation";
-import { getMuseumById } from "@/lib/api";
+import { getMuseumById, getMuseumArtworks } from "@/lib/api";
 import { ApiError } from "@/lib/errors";
+import type { ArtworkSummary } from "@/types/artwork";
 import { MuseumHero } from "@/components/museum/MuseumHero";
 import { MuseumInfo } from "@/components/museum/MuseumInfo";
 import { MuseumLocationMapWrapper } from "@/components/museum/MuseumLocationMapWrapper";
@@ -53,6 +54,17 @@ export default async function MuseumDetailPage({ params }: MuseumDetailPageProps
     notFound();
   }
 
+  // 소장 작품 전체 로딩 — 클라이언트 사이드 상태 필터링을 위해 한 번에 받아온다.
+  // 100개 이내는 클라이언트에서 충분히 다룰 수 있는 범위로 본다.
+  // 작품 API만 실패해도 미술관 정보는 정상 표시하도록 빈 배열로 폴백한다.
+  let artworks: ArtworkSummary[] = [];
+  try {
+    const result = await getMuseumArtworks(museum.id, { per_page: 100 });
+    artworks = result.data;
+  } catch (error) {
+    console.error("미술관 작품 목록 조회 실패:", error);
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
       <MuseumHero museum={museum} />
@@ -63,7 +75,7 @@ export default async function MuseumDetailPage({ params }: MuseumDetailPageProps
         name={museum.name_ko}
         address={museum.place.address}
       />
-      <MuseumArtworkGallery museumId={museum.id} />
+      <MuseumArtworkGallery artworks={artworks} />
     </div>
   );
 }
