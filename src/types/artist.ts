@@ -29,7 +29,7 @@ export type ArtistSummary = {
   /** 국적 원문 (단일 문자열) */
   nationality: string | null;
   /** 대표 이미지 URL */
-  thumbnail_url: string | null;
+  image_url: string | null;
   /** 작품 수 */
   artwork_count: number;
   /** 소속 사조 목록 */
@@ -55,7 +55,7 @@ export type ArtistDetail = {
   /** 작가 소개 (영어) */
   bio_en: string | null;
   /** 대표 이미지 URL */
-  thumbnail_url: string | null;
+  image_url: string | null;
   /** 소속 사조 목록 (period 정보 포함) */
   movements: ArtistMovementDetail[];
 };
