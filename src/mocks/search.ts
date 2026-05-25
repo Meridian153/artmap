@@ -57,7 +57,7 @@ export function mockSearchResults(query: string, options?: MockSearchOptions): S
             id: a.id,
             name_ko: a.name_ko,
             name_en: a.name_en,
-            thumbnail_url: a.thumbnail_url,
+            thumbnail_url: a.image_url,
           }))
       : [];
 
