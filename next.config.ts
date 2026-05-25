@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.metmuseum.org" },
       // 위키미디어 공용 이미지 파일 서버 — 화가 초상화 등 퍼블릭 도메인 이미지
       { protocol: "https", hostname: "upload.wikimedia.org" },
+      // 일부 작품 이미지가 http로 저장되어 있어 둘 다 허용 (DB 정규화 전까지)
+      { protocol: "http", hostname: "commons.wikimedia.org" },
+      { protocol: "https", hostname: "commons.wikimedia.org" },
     ],
   },
 };
