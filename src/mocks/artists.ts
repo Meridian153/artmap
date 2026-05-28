@@ -94,6 +94,50 @@ export const mockArtists: ArtistSummary[] = [
     artwork_count: 1,
     movements: [{ name_ko: "한국 추상 미술", name_en: "Korean Abstract Art" }],
   },
+  {
+    id: "artist-009",
+    name_ko: "외젠 들라크루아",
+    name_en: "Eugène Delacroix",
+    birth_year: 1798,
+    death_year: 1863,
+    nationality: "French",
+    image_url: null,
+    artwork_count: 1,
+    movements: [{ name_ko: "낭만주의", name_en: "Romanticism" }],
+  },
+  {
+    id: "artist-010",
+    name_ko: "에마누엘 로이체",
+    name_en: "Emanuel Leutze",
+    birth_year: 1816,
+    death_year: 1868,
+    nationality: "German-American",
+    image_url: null,
+    artwork_count: 1,
+    movements: [{ name_ko: "뒤셀도르프 화파", name_en: "Düsseldorf School" }],
+  },
+  {
+    id: "artist-011",
+    name_ko: "에드가 드가",
+    name_en: "Edgar Degas",
+    birth_year: 1834,
+    death_year: 1917,
+    nationality: "French",
+    image_url: null,
+    artwork_count: 1,
+    movements: [{ name_ko: "인상주의", name_en: "Impressionism" }],
+  },
+  {
+    id: "artist-012",
+    name_ko: "존 싱어 사전트",
+    name_en: "John Singer Sargent",
+    birth_year: 1856,
+    death_year: 1925,
+    nationality: "American",
+    image_url: null,
+    artwork_count: 1,
+    movements: [{ name_ko: "초상 회화", name_en: "Portraiture" }],
+  },
 ];
 
 /** 화가 상세 Mock 데이터 (GET /artists/{id}) — artwork_count 미포함 */
@@ -240,6 +284,75 @@ export const mockArtistDetail: Record<string, ArtistDetail> = {
         period_start: 1950,
         period_end: 1980,
       },
+    ],
+  },
+  "artist-009": {
+    id: "artist-009",
+    name_ko: "외젠 들라크루아",
+    name_en: "Eugène Delacroix",
+    birth_year: 1798,
+    death_year: 1863,
+    nationality: "French",
+    bio_ko:
+      "외젠 들라크루아(1798–1863)는 프랑스 낭만주의 회화를 대표하는 화가입니다. 격정적인 색채와 자유로운 붓질로 신고전주의의 균형을 깨뜨렸으며, ‹민중을 이끄는 자유의 여신›은 7월 혁명의 정신을 시각화한 낭만주의의 상징적 걸작입니다.",
+    bio_en:
+      "Eugène Delacroix (1798–1863) was the leading painter of French Romanticism. His passionate colour and free brushwork broke with the restraint of Neoclassicism, and Liberty Leading the People — his image of the July Revolution — became an emblematic masterpiece of the movement.",
+    image_url: null,
+    movements: [
+      { name_ko: "낭만주의", name_en: "Romanticism", period_start: 1800, period_end: 1860 },
+    ],
+  },
+  "artist-010": {
+    id: "artist-010",
+    name_ko: "에마누엘 로이체",
+    name_en: "Emanuel Leutze",
+    birth_year: 1816,
+    death_year: 1868,
+    nationality: "German-American",
+    bio_ko:
+      "에마누엘 로이체(1816–1868)는 독일에서 태어나 미국으로 이주한 역사화가로, 뒤셀도르프 화파의 정밀한 사실주의 전통 위에서 미국 역사의 결정적 장면들을 거대한 화면에 옮겼습니다. 대표작 ‹델라웨어 강을 건너는 워싱턴›은 미국 국민 도상으로 자리 잡았습니다.",
+    bio_en:
+      "Emanuel Leutze (1816–1868) was a German-born American history painter who, drawing on the meticulous realism of the Düsseldorf School, gave monumental form to defining episodes of United States history. His Washington Crossing the Delaware became one of the great icons of American national imagery.",
+    image_url: null,
+    movements: [
+      {
+        name_ko: "뒤셀도르프 화파",
+        name_en: "Düsseldorf School",
+        period_start: 1819,
+        period_end: 1900,
+      },
+    ],
+  },
+  "artist-011": {
+    id: "artist-011",
+    name_ko: "에드가 드가",
+    name_en: "Edgar Degas",
+    birth_year: 1834,
+    death_year: 1917,
+    nationality: "French",
+    bio_ko:
+      "에드가 드가(1834–1917)는 인상주의 화가 그룹의 일원으로 활동하면서도 빛이 아닌 형태와 동작, 무대 뒤의 일상에 집중한 화가입니다. 발레 무용수와 경마장, 목욕하는 여인들을 다룬 연작은 사실은 면밀히 구성된 화면이라는 점에서 인상주의 안에서도 독자적인 자리를 차지합니다.",
+    bio_en:
+      "Edgar Degas (1834–1917) exhibited with the Impressionists but devoted himself less to atmospheric light than to form, motion, and the world behind the scenes. His series of ballet dancers, racehorses, and bathing women — though apparently spontaneous — are tightly composed pictures that mark out a distinct place within Impressionism.",
+    image_url: null,
+    movements: [
+      { name_ko: "인상주의", name_en: "Impressionism", period_start: 1860, period_end: 1890 },
+    ],
+  },
+  "artist-012": {
+    id: "artist-012",
+    name_ko: "존 싱어 사전트",
+    name_en: "John Singer Sargent",
+    birth_year: 1856,
+    death_year: 1925,
+    nationality: "American",
+    bio_ko:
+      "존 싱어 사전트(1856–1925)는 19세기 말부터 20세기 초에 걸쳐 대서양 양안의 사교계를 풍미한 미국 초상 화가입니다. 유럽 거장들의 회화 전통과 인상주의의 자유로운 필치를 결합해 인물의 기품과 성격을 동시에 포착했으며, ‹마담 X›는 그의 가장 유명한 작품입니다.",
+    bio_en:
+      "John Singer Sargent (1856–1925) was the dominant American portraitist of the late nineteenth and early twentieth centuries, equally at home in London, Paris, and New York. By blending the bravura of the Old Masters with Impressionism's freer brushwork, he captured both the bearing and the character of his sitters — most famously in Madame X.",
+    image_url: null,
+    movements: [
+      { name_ko: "초상 회화", name_en: "Portraiture", period_start: 1875, period_end: 1925 },
     ],
   },
 };
@@ -420,6 +533,46 @@ export const mockArtistMapData: Record<string, ArtistCountryDistribution[]> = {
       artwork_count: 1,
       latitude: 35.9078,
       longitude: 127.7669,
+    },
+  ],
+  "artist-009": [
+    {
+      country_code: "FR",
+      country_name_ko: "프랑스",
+      country_name_en: "France",
+      artwork_count: 1,
+      latitude: 46.2276,
+      longitude: 2.2137,
+    },
+  ],
+  "artist-010": [
+    {
+      country_code: "US",
+      country_name_ko: "미국",
+      country_name_en: "United States",
+      artwork_count: 1,
+      latitude: 37.0902,
+      longitude: -95.7129,
+    },
+  ],
+  "artist-011": [
+    {
+      country_code: "US",
+      country_name_ko: "미국",
+      country_name_en: "United States",
+      artwork_count: 1,
+      latitude: 37.0902,
+      longitude: -95.7129,
+    },
+  ],
+  "artist-012": [
+    {
+      country_code: "US",
+      country_name_ko: "미국",
+      country_name_en: "United States",
+      artwork_count: 1,
+      latitude: 37.0902,
+      longitude: -95.7129,
     },
   ],
 };

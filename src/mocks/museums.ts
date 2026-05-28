@@ -15,12 +15,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 48.86,
     longitude: 2.3266,
     artwork_count: 2,
-    image_url: null, // PENDING_BE: image_url — GET /api/v1/museums
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Front_view_of_the_Mus%C3%A9e_d%27Orsay.jpg/1280px-Front_view_of_the_Mus%C3%A9e_d%27Orsay.jpg",
     featured_artwork: {
-      artwork_id: "artwork-001",
-      artwork_title: "수련 (Water Lilies)",
+      artwork_id: "artwork-004",
+      artwork_title: "푸른 수련 (Blue Water Lilies)",
       image_url:
-        "https://upload.wikimedia.org/wikipedia/commons/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Blue_Water_Lilies_-_Google_Art_Project.jpg/500px-Claude_Monet_-_Blue_Water_Lilies_-_Google_Art_Project.jpg",
     } satisfies FeaturedArtwork, // PENDING_BE: featured_artwork — GET /api/v1/museums
   },
   {
@@ -33,12 +34,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 52.3584,
     longitude: 4.8811,
     artwork_count: 3,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Van_Gogh_Museum_Amsterdam.jpg/1280px-Van_Gogh_Museum_Amsterdam.jpg",
     featured_artwork: {
       artwork_id: "artwork-002",
-      artwork_title: "별이 빛나는 밤 (The Starry Night)",
+      artwork_title: "해바라기 (Sunflowers)",
       image_url:
-        "https://upload.wikimedia.org/wikipedia/commons/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Vincent_van_Gogh_-_Sunflowers_-_VGM_F458.jpg/500px-Vincent_van_Gogh_-_Sunflowers_-_VGM_F458.jpg",
     } satisfies FeaturedArtwork,
   },
   {
@@ -51,13 +53,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 40.7794,
     longitude: -73.9632,
     artwork_count: 4,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/3/30/Metropolitan_Museum_of_Art_%28The_Met%29_-_Central_Park%2C_NYC.jpg",
     featured_artwork: {
-      artwork_id: "artwork-003",
+      artwork_id: "artwork-009",
       artwork_title: "델라웨어 강을 건너는 워싱턴 (Washington Crossing the Delaware)",
-      // 기존 Vermeer Young Woman with a Water Jug 이미지(metmuseum.org)가 404 응답으로 교체
       image_url:
-        "https://upload.wikimedia.org/wikipedia/commons/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg/500px-Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
     } satisfies FeaturedArtwork,
   },
   {
@@ -70,12 +72,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 48.8606,
     longitude: 2.3376,
     artwork_count: 3,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Louvre_Museum_Wikimedia_Commons.jpg/1280px-Louvre_Museum_Wikimedia_Commons.jpg",
     featured_artwork: {
-      artwork_id: "artwork-004",
+      artwork_id: "artwork-007",
       artwork_title: "모나리자 (Mona Lisa)",
       image_url:
-        "https://upload.wikimedia.org/wikipedia/commons/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/500px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
     } satisfies FeaturedArtwork,
   },
   {
@@ -88,7 +91,9 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 37.5797,
     longitude: 126.977,
     artwork_count: 2,
-    image_url: null,
+    // 미술관 건물 외관 사진은 Commons에 공개되어 있어 헤더 이미지로 사용 가능
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/National_Museum_of_Modern_and_Contemporary_Art%2C_Seoul.jpg/1280px-National_Museum_of_Modern_and_Contemporary_Art%2C_Seoul.jpg",
     // 한국 근현대 작품(이중섭 「황소」 등)은 저작권 이슈로 Wikimedia Commons에 호스팅되지 않음 → 이니셜 폴백
     featured_artwork: null,
   },
@@ -102,12 +107,13 @@ export const mockMuseums: MuseumSummary[] = [
     latitude: 43.7678,
     longitude: 11.2553,
     artwork_count: 2,
-    image_url: null,
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/0/08/Florence._Uffizi_Gallery_and_Palazzo_Vecchio_%283611129323%29.jpg",
     featured_artwork: {
-      artwork_id: "artwork-006",
+      artwork_id: "artwork-013",
       artwork_title: "비너스의 탄생 (The Birth of Venus)",
       image_url:
-        "https://upload.wikimedia.org/wikipedia/commons/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/500px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
     } satisfies FeaturedArtwork,
   },
 ];
@@ -120,6 +126,8 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     name_en: "Musée d'Orsay",
     institution_type: "museum",
     country_code: "FR",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Front_view_of_the_Mus%C3%A9e_d%27Orsay.jpg/1280px-Front_view_of_the_Mus%C3%A9e_d%27Orsay.jpg",
     description_ko:
       "파리 센 강변에 위치한 오르세 미술관은 옛 기차역을 개조해 만든 미술관으로, 1848년부터 1914년 사이의 인상주의와 후기 인상주의 걸작을 소장하고 있습니다.",
     description_en:
@@ -147,6 +155,8 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     name_en: "Van Gogh Museum",
     institution_type: "museum",
     country_code: "NL",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Van_Gogh_Museum_Amsterdam.jpg/1280px-Van_Gogh_Museum_Amsterdam.jpg",
     description_ko:
       "암스테르담에 위치한 반 고흐 미술관은 빈센트 반 고흐의 작품을 세계에서 가장 많이 소장하고 있으며, 그의 편지와 개인 소장품도 전시합니다.",
     description_en:
@@ -170,6 +180,8 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     name_en: "The Metropolitan Museum of Art",
     institution_type: "museum",
     country_code: "US",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/3/30/Metropolitan_Museum_of_Art_%28The_Met%29_-_Central_Park%2C_NYC.jpg",
     description_ko:
       "뉴욕 센트럴파크 옆에 위치한 메트로폴리탄 미술관은 미국 최대의 미술관으로, 5,000년에 걸친 인류 문명의 예술품 약 50만 점을 소장하고 있습니다.",
     description_en:
@@ -197,6 +209,8 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     name_en: "Musée du Louvre",
     institution_type: "museum",
     country_code: "FR",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Louvre_Museum_Wikimedia_Commons.jpg/1280px-Louvre_Museum_Wikimedia_Commons.jpg",
     description_ko:
       "세계 최대 규모의 미술관인 루브르 박물관은 파리 중심부에 위치하며, 레오나르도 다 빈치의 모나리자를 비롯한 인류의 위대한 예술 유산을 소장하고 있습니다.",
     description_en:
@@ -224,6 +238,8 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     name_en: "National Museum of Modern and Contemporary Art",
     institution_type: "museum",
     country_code: "KR",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/National_Museum_of_Modern_and_Contemporary_Art%2C_Seoul.jpg/1280px-National_Museum_of_Modern_and_Contemporary_Art%2C_Seoul.jpg",
     description_ko:
       "국립현대미술관은 한국 근현대 미술의 중심 기관으로, 서울, 과천, 덕수궁, 청주 4개 관에서 한국 및 국제 현대미술 작품을 전시합니다.",
     description_en:
@@ -251,6 +267,8 @@ export const mockMuseumDetail: Record<string, MuseumDetail> = {
     name_en: "Galleria degli Uffizi",
     institution_type: "gallery",
     country_code: "IT",
+    image_url:
+      "https://upload.wikimedia.org/wikipedia/commons/0/08/Florence._Uffizi_Gallery_and_Palazzo_Vecchio_%283611129323%29.jpg",
     description_ko:
       "피렌체의 아르노 강변에 위치한 우피치 미술관은 르네상스 시대의 걸작을 세계에서 가장 풍부하게 소장한 미술관 중 하나입니다.",
     description_en:
