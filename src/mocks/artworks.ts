@@ -36,7 +36,7 @@ export const mockArtworks: ArtworkSummaryWithMuseum[] = [
     title_en: "Bedroom in Arles",
     year_created: 1888,
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg/500px-Vincent_van_Gogh_-_De_slaapkamer_-_Google_Art_Project.jpg",
     status: "on_display",
     museum_name_ko: "반 고흐 미술관",
     museum_name_en: "Van Gogh Museum",
@@ -91,7 +91,7 @@ export const mockArtworks: ArtworkSummaryWithMuseum[] = [
     title_en: "The Virgin and Child with Saint Anne",
     year_created: 1503,
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Leonardo_da_Vinci_-_Virgin_and_Child_with_St_Anne_C2RMF_retouched.jpg/1280px-Leonardo_da_Vinci_-_Virgin_and_Child_with_St_Anne_C2RMF_retouched.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Leonardo_da_Vinci_-_Virgin_and_Child_with_St_Anne_C2RMF_retouched.jpg/500px-Leonardo_da_Vinci_-_Virgin_and_Child_with_St_Anne_C2RMF_retouched.jpg",
     status: "on_display",
     museum_name_ko: "루브르 박물관",
     museum_name_en: "Musée du Louvre",
@@ -157,7 +157,7 @@ export const mockArtworks: ArtworkSummaryWithMuseum[] = [
     title_en: "Annunciation",
     year_created: 1472,
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Annunciation_%28Leonardo_c._1472%E2%80%931476%29.jpg/1280px-Annunciation_%28Leonardo_c._1472%E2%80%931476%29.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Annunciation_%28Leonardo_c._1472%E2%80%931476%29.jpg/500px-Annunciation_%28Leonardo_c._1472%E2%80%931476%29.jpg",
     status: "on_display",
     museum_name_ko: "우피치 미술관",
     museum_name_en: "Galleria degli Uffizi",
@@ -198,7 +198,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "73 × 93.4 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Vincent_van_Gogh_-_Wheat_Field_with_Cypresses_-_Google_Art_Project.jpg/500px-Vincent_van_Gogh_-_Wheat_Field_with_Cypresses_-_Google_Art_Project.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Vincent_van_Gogh_-_Wheat_Field_with_Cypresses_-_Google_Art_Project.jpg/1280px-Vincent_van_Gogh_-_Wheat_Field_with_Cypresses_-_Google_Art_Project.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -227,7 +227,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "95 × 73 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Vincent_van_Gogh_-_Sunflowers_-_VGM_F458.jpg/500px-Vincent_van_Gogh_-_Sunflowers_-_VGM_F458.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Vincent_van_Gogh_-_Sunflowers_-_VGM_F458.jpg/1280px-Vincent_van_Gogh_-_Sunflowers_-_VGM_F458.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -285,7 +285,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "200 × 200 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Blue_Water_Lilies_-_Google_Art_Project.jpg/500px-Claude_Monet_-_Blue_Water_Lilies_-_Google_Art_Project.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Blue_Water_Lilies_-_Google_Art_Project.jpg/1280px-Claude_Monet_-_Blue_Water_Lilies_-_Google_Art_Project.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -314,7 +314,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "260 × 325 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Eug%C3%A8ne_Delacroix_-_La_libert%C3%A9_guidant_le_peuple.jpg/500px-Eug%C3%A8ne_Delacroix_-_La_libert%C3%A9_guidant_le_peuple.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Eug%C3%A8ne_Delacroix_-_La_libert%C3%A9_guidant_le_peuple.jpg/1280px-Eug%C3%A8ne_Delacroix_-_La_libert%C3%A9_guidant_le_peuple.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -343,7 +343,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "107 × 73 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Claude_Monet_-_Cath%C3%A9drale_de_Rouen._Harmonie_bleue_et_or.jpg/500px-Claude_Monet_-_Cath%C3%A9drale_de_Rouen._Harmonie_bleue_et_or.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Claude_Monet_-_Cath%C3%A9drale_de_Rouen._Harmonie_bleue_et_or.jpg/1280px-Claude_Monet_-_Cath%C3%A9drale_de_Rouen._Harmonie_bleue_et_or.jpg",
     is_public_domain: true,
     status: "on_loan",
     curation_ko:
@@ -382,7 +382,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on poplar panel",
     dimensions: "77 × 53 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/500px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/1280px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -440,7 +440,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "378.5 × 647.7 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg/500px-Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg/1280px-Washington_Crossing_the_Delaware_by_Emanuel_Leutze%2C_MMA-NYC%2C_1851.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -469,7 +469,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "83.5 × 77.2 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/The_Dance_Class_MET_DT46.jpg/500px-The_Dance_Class_MET_DT46.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/The_Dance_Class_MET_DT46.jpg/1280px-The_Dance_Class_MET_DT46.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -498,7 +498,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Oil on canvas",
     dimensions: "82 × 114 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Vincent_van_Gogh_-_The_potato_eaters_-_Google_Art_Project_%285776925%29.jpg/500px-Vincent_van_Gogh_-_The_potato_eaters_-_Google_Art_Project_%285776925%29.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Vincent_van_Gogh_-_The_potato_eaters_-_Google_Art_Project_%285776925%29.jpg/1280px-Vincent_van_Gogh_-_The_potato_eaters_-_Google_Art_Project_%285776925%29.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -521,13 +521,13 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     id: "artwork-012",
     title_ko: "마담 X",
     title_en: "Madame X",
-    year_created: 1883,
+    year_created: 1884,
     year_end: 1884,
     medium_ko: "캔버스에 유채",
     medium_en: "Oil on canvas",
     dimensions: "208.6 × 109.9 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Sargent_MadameX.jpeg/500px-Sargent_MadameX.jpeg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Sargent_MadameX.jpeg/1280px-Sargent_MadameX.jpeg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
@@ -556,7 +556,7 @@ export const mockArtworkDetail: Record<string, ArtworkDetail> = {
     medium_en: "Tempera on canvas",
     dimensions: "172.5 × 278.9 cm",
     image_url:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/500px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/1280px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg",
     is_public_domain: true,
     status: "on_display",
     curation_ko:
