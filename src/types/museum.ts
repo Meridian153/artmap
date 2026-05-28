@@ -74,6 +74,8 @@ export type MuseumDetail = {
   institution_type: InstitutionType;
   /** ISO 3166-1 alpha-2 국가 코드 */
   country_code: string;
+  /** 미술관 대표(헤더) 이미지 URL */
+  image_url: string | null;
   /** 미술관 소개 (한국어) */
   description_ko: string | null;
   /** 미술관 소개 (영어) */

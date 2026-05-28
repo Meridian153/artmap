@@ -42,6 +42,37 @@ const FILTER_CHIPS: ReadonlyArray<{ value: FilterValue; label: string; selectedC
   },
 ];
 
+// 작품 카드 썸네일 — image_url 부재 또는 로드 실패 시 "이미지 준비 중" 폴백 표시
+// 각 카드가 독립된 hasImageError 상태를 갖도록 서브컴포넌트로 분리
+type ArtworkThumbProps = { artwork: ArtworkSummary };
+
+function ArtworkThumb({ artwork }: ArtworkThumbProps) {
+  // image_url 로드 실패 여부 — onError 발생 시 폴백 UI로 전환
+  const [hasImageError, setHasImageError] = useState(false);
+
+  // image_url이 없거나 로드에 실패한 경우 일관된 폴백 UI 표시
+  if (!artwork.image_url || hasImageError) {
+    return (
+      <div className="bg-muted text-muted-foreground flex aspect-square w-full items-center justify-center text-xs">
+        이미지 준비 중
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative aspect-square w-full overflow-hidden rounded-md">
+      <Image
+        src={artwork.image_url}
+        alt={artwork.title_ko || artwork.title_en}
+        fill
+        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+        className="object-cover"
+        onError={() => setHasImageError(true)}
+      />
+    </div>
+  );
+}
+
 export function MuseumArtworkGallery({ artworks }: MuseumArtworkGalleryProps) {
   // 선택된 필터 상태 — 기본값은 "전체"
   const [selectedStatus, setSelectedStatus] = useState<FilterValue>("all");
@@ -113,22 +144,7 @@ export function MuseumArtworkGallery({ artworks }: MuseumArtworkGalleryProps) {
             {filteredArtworks.map((artwork) => (
               <li key={artwork.id}>
                 <Link href={`/artworks/${artwork.id}`} className="group block">
-                  {/* image_url이 있으면 썸네일 이미지, 없으면 placeholder 표시 */}
-                  {artwork.image_url ? (
-                    <div className="relative aspect-square w-full overflow-hidden rounded-md">
-                      <Image
-                        src={artwork.image_url}
-                        alt={artwork.title_ko || artwork.title_en}
-                        fill
-                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="bg-muted text-muted-foreground flex aspect-square w-full items-center justify-center text-xs">
-                      이미지 준비 중
-                    </div>
-                  )}
+                  <ArtworkThumb artwork={artwork} />
                   <div className="mt-3">
                     <p className="text-foreground text-sm font-medium group-hover:underline">
                       {artwork.title_ko}
