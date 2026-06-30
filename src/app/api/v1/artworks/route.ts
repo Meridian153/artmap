@@ -5,7 +5,18 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql, type SQL } from "drizzle-orm";
+import {
+  artworks,
+  artworkArtists,
+  artists,
+  artistMovements,
+  artMovements,
+  artworkLocations,
+  places,
+  institutions,
+} from "@/lib/schema";
 import { internalServerError, parseIntParam } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -28,11 +39,12 @@ const VALID_STATUS = new Set(["on_display", "in_storage", "on_loan", "under_rest
 
 // ─── 정렬 기준 매핑 ───────────────────────────────────────────────────────────
 
-const SORT_MAP: Record<string, string> = {
-  year_asc: "aw.year_created ASC NULLS LAST",
-  year_desc: "aw.year_created DESC NULLS LAST",
-  title_asc: "aw.title_en ASC",
+const ORDER_BY_SQL: Record<string, SQL> = {
+  year_asc: sql`${artworks.year_created} ASC NULLS LAST`,
+  year_desc: sql`${artworks.year_created} DESC NULLS LAST`,
+  title_asc: sql`${artworks.title_en} ASC`,
 };
+const DEFAULT_ORDER_BY = ORDER_BY_SQL["year_asc"]!;
 
 // ─── GET 핸들러 ───────────────────────────────────────────────────────────────
 
@@ -54,44 +66,42 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ data: [], total: 0, page, per_page: perPage });
     }
 
-    const orderBy = SORT_MAP[sort] ?? SORT_MAP["year_asc"];
+    const orderBySql = ORDER_BY_SQL[sort] ?? DEFAULT_ORDER_BY;
 
     // movement 필터는 artwork → artwork_artists → artists → artist_movements → art_movements 경유
     // artwork_locations (end_date IS NULL) → places → institutions 경유 미술관명 조회
-    const { rows } = await pool.query<ArtworkRow>(
-      `
+    const result = await db.execute<ArtworkRow>(sql`
       WITH filtered_ids AS (
-        SELECT DISTINCT aw.id
-        FROM artworks aw
-        LEFT JOIN artwork_artists aa  ON aa.artwork_id  = aw.id
-        LEFT JOIN artists         art ON art.id         = aa.artist_id
-        LEFT JOIN artist_movements arm ON arm.artist_id = art.id
-        LEFT JOIN art_movements   am  ON am.id          = arm.movement_id
-        WHERE ($1::uuid IS NULL OR aa.artist_id = $1::uuid)
-          AND ($2::text IS NULL OR am.name_en ILIKE $2)
-          AND ($3::text IS NULL OR aw.status   = $3)
+        SELECT DISTINCT ${artworks.id}
+        FROM ${artworks}
+        LEFT JOIN ${artworkArtists} aa  ON aa.artwork_id  = ${artworks.id}
+        LEFT JOIN ${artists}         art ON art.id         = aa.artist_id
+        LEFT JOIN ${artistMovements} arm ON arm.artist_id = art.id
+        LEFT JOIN ${artMovements}   am  ON am.id          = arm.movement_id
+        WHERE (${artistId}::uuid IS NULL OR aa.artist_id = ${artistId}::uuid)
+          AND (${movement}::text IS NULL OR am.name_en ILIKE ${movement})
+          AND (${validStatus}::text IS NULL OR ${artworks.status}   = ${validStatus})
       )
       SELECT
-        aw.id,
-        aw.title_ko,
-        aw.title_en,
-        aw.year_created,
-        aw.image_url,
-        aw.status,
-        i.name_ko  AS museum_name_ko,
-        i.name_en  AS museum_name_en,
+        ${artworks.id},
+        ${artworks.title_ko},
+        ${artworks.title_en},
+        ${artworks.year_created},
+        ${artworks.image_url},
+        ${artworks.status},
+        ${institutions.name_ko}  AS museum_name_ko,
+        ${institutions.name_en}  AS museum_name_en,
         COUNT(*) OVER() AS total_count
-      FROM artworks aw
-      JOIN filtered_ids fi ON fi.id = aw.id
-      LEFT JOIN artwork_locations al
-        ON al.artwork_id = aw.id AND al.end_date IS NULL
-      LEFT JOIN places       p ON p.id             = al.place_id
-      LEFT JOIN institutions i ON i.id             = p.institution_id
-      ORDER BY ${orderBy}
-      LIMIT $4 OFFSET $5
-      `,
-      [artistId, movement, validStatus, perPage, offset],
-    );
+      FROM ${artworks}
+      JOIN filtered_ids fi ON fi.id = ${artworks.id}
+      LEFT JOIN ${artworkLocations} al
+        ON al.artwork_id = ${artworks.id} AND al.end_date IS NULL
+      LEFT JOIN ${places} ON ${places.id} = al.place_id
+      LEFT JOIN ${institutions} ON ${institutions.id} = ${places.institution_id}
+      ORDER BY ${orderBySql}
+      LIMIT ${perPage} OFFSET ${offset}
+    `);
+    const rows = result.rows;
 
     const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
 

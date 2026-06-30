@@ -4,7 +4,9 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import { artists, artworkArtists, artworkOwnerships, institutions, places } from "@/lib/schema";
 import { notFound, internalServerError, isValidUUID } from "@/lib/api-response";
 import { getCountryName } from "@/lib/country-names";
 
@@ -32,33 +34,30 @@ export async function GET(
 
   try {
     // 화가 존재 여부 확인
-    const artistCheck = await pool.query<{ exists: boolean }>(
-      "SELECT EXISTS(SELECT 1 FROM artists WHERE id = $1) AS exists",
-      [id],
-    );
+    const artistCheck = await db.execute<{ exists: boolean }>(sql`
+      SELECT EXISTS(SELECT 1 FROM ${artists} WHERE ${artists.id} = ${id}) AS exists
+    `);
     if (!artistCheck.rows[0].exists) {
       return notFound(instance);
     }
 
     // artwork_artists → artwork_ownerships → institutions.country_code GROUP BY
     // places에서 국가 대표 좌표 AVG 계산
-    const { rows } = await pool.query<MapDataRow>(
-      `
+    const result = await db.execute<MapDataRow>(sql`
       SELECT
-        i.country_code,
-        COUNT(DISTINCT ao.artwork_id)::integer AS artwork_count,
-        AVG(p.latitude)::float                 AS latitude,
-        AVG(p.longitude)::float                AS longitude
-      FROM artwork_artists aa
-      JOIN artwork_ownerships ao ON ao.artwork_id    = aa.artwork_id
-      JOIN institutions       i  ON i.id             = ao.institution_id
-      JOIN places             p  ON p.institution_id = i.id
-      WHERE aa.artist_id = $1
-      GROUP BY i.country_code
+        ${institutions.country_code},
+        COUNT(DISTINCT ${artworkOwnerships.artwork_id})::integer AS artwork_count,
+        AVG(${places.latitude})::float                 AS latitude,
+        AVG(${places.longitude})::float                AS longitude
+      FROM ${artworkArtists}
+      JOIN ${artworkOwnerships} ON ${artworkOwnerships.artwork_id}    = ${artworkArtists.artwork_id}
+      JOIN ${institutions}       ON ${institutions.id}             = ${artworkOwnerships.institution_id}
+      JOIN ${places}             ON ${places.institution_id} = ${institutions.id}
+      WHERE ${artworkArtists.artist_id} = ${id}
+      GROUP BY ${institutions.country_code}
       ORDER BY artwork_count DESC
-      `,
-      [id],
-    );
+    `);
+    const rows = result.rows;
 
     const data = rows.map((row) => ({
       country_code: row.country_code,

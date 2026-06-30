@@ -7,7 +7,9 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import { institutions, artworks, artworkOwnerships, artworkArtists, artists } from "@/lib/schema";
 import { notFound, internalServerError, isValidUUID, parseIntParam } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -39,10 +41,9 @@ export async function GET(
   }
 
   try {
-    const museumCheck = await pool.query<{ exists: boolean }>(
-      "SELECT EXISTS(SELECT 1 FROM institutions WHERE id = $1 AND deleted_at IS NULL) AS exists",
-      [id],
-    );
+    const museumCheck = await db.execute<{ exists: boolean }>(sql`
+      SELECT EXISTS(SELECT 1 FROM ${institutions} WHERE ${institutions.id} = ${id} AND ${institutions.deleted_at} IS NULL) AS exists
+    `);
     if (!museumCheck.rows[0].exists) {
       return notFound(instance);
     }
@@ -56,25 +57,24 @@ export async function GET(
     const limit = isLimitMode ? parseIntParam(limitParam, 20, 1, 100) : perPage;
     const offset = isLimitMode ? 0 : (page - 1) * perPage;
 
-    const { rows } = await pool.query<ArtworkRow>(
-      `
+    const result = await db.execute<ArtworkRow>(sql`
       WITH artist_ranked AS (
         SELECT
           aa.artwork_id,
-          a.id        AS artist_id,
-          a.name_ko   AS artist_name_ko,
-          a.name_en   AS artist_name_en,
+          ${artists.id}        AS artist_id,
+          ${artists.name_ko}   AS artist_name_ko,
+          ${artists.name_en}   AS artist_name_en,
           ROW_NUMBER() OVER (
-            PARTITION BY aa.artwork_id ORDER BY a.name_en ASC
+            PARTITION BY aa.artwork_id ORDER BY ${artists.name_en} ASC
           ) AS rn
-        FROM artwork_artists aa
-        JOIN artists a ON a.id = aa.artist_id AND a.deleted_at IS NULL
+        FROM ${artworkArtists} aa
+        JOIN ${artists} ON ${artists.id} = aa.artist_id AND ${artists.deleted_at} IS NULL
       ),
       owned AS (
         SELECT aw.*
-        FROM artworks aw
-        JOIN artwork_ownerships ao
-          ON ao.artwork_id = aw.id AND ao.institution_id = $1
+        FROM ${artworks} aw
+        JOIN ${artworkOwnerships} ao
+          ON ao.artwork_id = aw.id AND ao.institution_id = ${id}
         WHERE aw.deleted_at IS NULL
       )
       SELECT
@@ -92,10 +92,9 @@ export async function GET(
       LEFT JOIN artist_ranked ar
         ON ar.artwork_id = ow.id AND ar.rn = 1
       ORDER BY ow.year_created DESC NULLS LAST
-      LIMIT $2 OFFSET $3
-      `,
-      [id, limit, offset],
-    );
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+    const rows = result.rows;
 
     const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
 

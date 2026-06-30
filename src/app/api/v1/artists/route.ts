@@ -4,7 +4,17 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql, type SQL } from "drizzle-orm";
+import {
+  artists,
+  artistMovements,
+  artMovements,
+  artworks,
+  artworkArtists,
+  artworkOwnerships,
+  institutions,
+} from "@/lib/schema";
 import { internalServerError, parseIntParam } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -25,11 +35,12 @@ type ArtistRow = {
 
 // ─── 정렬 기준 매핑 ───────────────────────────────────────────────────────────
 
-const SORT_MAP: Record<string, string> = {
-  name_asc: "ad.name_en ASC",
-  birth_year_asc: "ad.birth_year ASC NULLS LAST",
-  artwork_count_desc: "ad.artwork_count DESC NULLS LAST",
+const ORDER_BY_SQL: Record<string, SQL> = {
+  name_asc: sql`${artists.name_en} ASC`,
+  birth_year_asc: sql`${artists.birth_year} ASC NULLS LAST`,
+  artwork_count_desc: sql`artwork_count DESC NULLS LAST`,
 };
+const DEFAULT_ORDER_BY = ORDER_BY_SQL["name_asc"]!;
 
 // ─── GET 핸들러 ───────────────────────────────────────────────────────────────
 
@@ -44,36 +55,35 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const perPage = parseIntParam(sp.get("per_page"), 20, 1, 100);
     const offset = (page - 1) * perPage;
 
-    const orderBy = SORT_MAP[sort] ?? SORT_MAP["name_asc"];
+    const orderBySql = ORDER_BY_SQL[sort] ?? DEFAULT_ORDER_BY;
 
-    const { rows } = await pool.query<ArtistRow>(
-      `
+    const result = await db.execute<ArtistRow>(sql`
       WITH filtered_ids AS (
-        SELECT DISTINCT a.id
-        FROM artists a
-        LEFT JOIN artist_movements arm ON arm.artist_id = a.id
-        LEFT JOIN art_movements   am  ON am.id = arm.movement_id
-        WHERE a.deleted_at IS NULL
-          AND ($1::text IS NULL OR am.name_en ILIKE $1)
-          AND ($2::text IS NULL OR a.nationality ILIKE '%' || $2 || '%')
+        SELECT DISTINCT ${artists.id}
+        FROM ${artists}
+        LEFT JOIN ${artistMovements} arm ON arm.artist_id = ${artists.id}
+        LEFT JOIN ${artMovements}   am  ON am.id = arm.movement_id
+        WHERE ${artists.deleted_at} IS NULL
+          AND (${movement}::text IS NULL OR am.name_en ILIKE ${movement})
+          AND (${nationality}::text IS NULL OR ${artists.nationality} ILIKE ${"%" + nationality + "%"})
       ),
       artist_data AS (
         SELECT
-          a.id,
-          a.name_ko,
-          a.name_en,
-          a.birth_year,
-          a.death_year,
-          a.nationality,
-          a.thumbnail_url,
+          ${artists.id},
+          ${artists.name_ko},
+          ${artists.name_en},
+          ${artists.birth_year},
+          ${artists.death_year},
+          ${artists.nationality},
+          ${artists.thumbnail_url},
           COUNT(DISTINCT aa.artwork_id)::integer AS artwork_count
-        FROM artists a
-        JOIN filtered_ids fi ON fi.id = a.id
-        LEFT JOIN artwork_artists aa ON aa.artist_id = a.id
-        LEFT JOIN artworks aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
+        FROM ${artists}
+        JOIN filtered_ids fi ON fi.id = ${artists.id}
+        LEFT JOIN ${artworkArtists} aa ON aa.artist_id = ${artists.id}
+        LEFT JOIN ${artworks} aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
         GROUP BY
-          a.id, a.name_ko, a.name_en, a.birth_year, a.death_year,
-          a.nationality, a.thumbnail_url
+          ${artists.id}, ${artists.name_ko}, ${artists.name_en}, ${artists.birth_year}, ${artists.death_year},
+          ${artists.nationality}, ${artists.thumbnail_url}
       ),
       movements_agg AS (
         SELECT
@@ -82,21 +92,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             JSON_BUILD_OBJECT('name_ko', am.name_ko, 'name_en', am.name_en)
             ORDER BY am.name_en
           ) FILTER (WHERE am.id IS NOT NULL) AS movements
-        FROM artist_movements arm
-        JOIN art_movements am ON am.id = arm.movement_id
+        FROM ${artistMovements} arm
+        JOIN ${artMovements} am ON am.id = arm.movement_id
         WHERE arm.artist_id IN (SELECT id FROM filtered_ids)
         GROUP BY arm.artist_id
       ),
       top_museum AS (
         SELECT DISTINCT ON (aa.artist_id)
           aa.artist_id,
-          i.name_ko AS museum_name_ko
-        FROM artwork_artists aa
-        JOIN artwork_ownerships ao ON ao.artwork_id = aa.artwork_id
-        JOIN institutions i ON i.id = ao.institution_id AND i.deleted_at IS NULL
-        JOIN artworks aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
+          ${institutions.name_ko} AS museum_name_ko
+        FROM ${artworkArtists} aa
+        JOIN ${artworkOwnerships} ao ON ao.artwork_id = aa.artwork_id
+        JOIN ${institutions} ON ${institutions.id} = ao.institution_id AND ${institutions.deleted_at} IS NULL
+        JOIN ${artworks} aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
         WHERE aa.artist_id IN (SELECT id FROM filtered_ids)
-        GROUP BY aa.artist_id, i.id, i.name_ko
+        GROUP BY aa.artist_id, ${institutions.id}, ${institutions.name_ko}
         ORDER BY aa.artist_id, COUNT(*) DESC
       )
       SELECT
@@ -107,11 +117,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       FROM artist_data ad
       LEFT JOIN movements_agg ma ON ma.artist_id = ad.id
       LEFT JOIN top_museum tm ON tm.artist_id = ad.id
-      ORDER BY ${orderBy}
-      LIMIT $3 OFFSET $4
-      `,
-      [movement, nationality, perPage, offset],
-    );
+      ORDER BY ${orderBySql}
+      LIMIT ${perPage} OFFSET ${offset}
+    `);
+    const rows = result.rows;
 
     const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
 

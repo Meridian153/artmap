@@ -7,7 +7,16 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import {
+  artists,
+  artworks,
+  artworkArtists,
+  artworkLocations,
+  places,
+  institutions,
+} from "@/lib/schema";
 import { notFound, internalServerError, isValidUUID, parseIntParam } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -39,10 +48,9 @@ export async function GET(
 
   try {
     // 화가 존재 여부 확인
-    const artistCheck = await pool.query<{ exists: boolean }>(
-      "SELECT EXISTS(SELECT 1 FROM artists WHERE id = $1) AS exists",
-      [id],
-    );
+    const artistCheck = await db.execute<{ exists: boolean }>(sql`
+      SELECT EXISTS(SELECT 1 FROM ${artists} WHERE ${artists.id} = ${id}) AS exists
+    `);
     if (!artistCheck.rows[0].exists) {
       return notFound(instance);
     }
@@ -57,31 +65,29 @@ export async function GET(
     const offset = isLimitMode ? 0 : (page - 1) * perPage;
 
     // artwork_locations (end_date IS NULL) → places → institutions 경유 미술관명 조회
-    const { rows } = await pool.query<ArtworkWithMuseumRow>(
-      `
+    const result = await db.execute<ArtworkWithMuseumRow>(sql`
       SELECT
-        aw.id,
-        aw.title_ko,
-        aw.title_en,
-        aw.year_created,
-        aw.image_url,
-        aw.status,
-        MAX(i.name_ko)  AS museum_name_ko,
-        MAX(i.name_en)  AS museum_name_en,
+        ${artworks.id},
+        ${artworks.title_ko},
+        ${artworks.title_en},
+        ${artworks.year_created},
+        ${artworks.image_url},
+        ${artworks.status},
+        MAX(${institutions.name_ko})  AS museum_name_ko,
+        MAX(${institutions.name_en})  AS museum_name_en,
         COUNT(*) OVER() AS total_count
-      FROM artworks aw
-      JOIN artwork_artists aa
-        ON aa.artwork_id = aw.id AND aa.artist_id = $1
-      LEFT JOIN artwork_locations al
-        ON al.artwork_id = aw.id AND al.end_date IS NULL
-      LEFT JOIN places p ON p.id = al.place_id
-      LEFT JOIN institutions i ON i.id = p.institution_id
-      GROUP BY aw.id
-      ORDER BY aw.year_created ASC NULLS LAST
-      LIMIT $2 OFFSET $3
-      `,
-      [id, limit, offset],
-    );
+      FROM ${artworks}
+      JOIN ${artworkArtists}
+        ON ${artworkArtists.artwork_id} = ${artworks.id} AND ${artworkArtists.artist_id} = ${id}
+      LEFT JOIN ${artworkLocations}
+        ON ${artworkLocations.artwork_id} = ${artworks.id} AND ${artworkLocations.end_date} IS NULL
+      LEFT JOIN ${places} ON ${places.id} = ${artworkLocations.place_id}
+      LEFT JOIN ${institutions} ON ${institutions.id} = ${places.institution_id}
+      GROUP BY ${artworks.id}
+      ORDER BY ${artworks.year_created} ASC NULLS LAST
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+    const rows = result.rows;
 
     const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
 
