@@ -36,8 +36,8 @@ type ArtistRow = {
 // ─── 정렬 기준 매핑 ───────────────────────────────────────────────────────────
 
 const ORDER_BY_SQL: Record<string, SQL> = {
-  name_asc: sql`${artists.name_en} ASC`,
-  birth_year_asc: sql`${artists.birth_year} ASC NULLS LAST`,
+  name_asc: sql`name_en ASC`,
+  birth_year_asc: sql`birth_year ASC NULLS LAST`,
   artwork_count_desc: sql`artwork_count DESC NULLS LAST`,
 };
 const DEFAULT_ORDER_BY = ORDER_BY_SQL["name_asc"]!;

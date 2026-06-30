@@ -42,16 +42,42 @@ const rows = await db
   `src/lib/schema.ts`에 정의된 객체를 사용한다.
 - 문자열로 직접 쓰는 경우는 오타나 리팩터링 시 런타임 에러로 이어진다.
 
+**예외 — CTE 결과를 SELECT하는 외부 쿼리의 ORDER BY**
+
+CTE 외부 쿼리의 `FROM`에는 원본 테이블이 아닌 CTE 결과만 존재한다.  
+이 시점에 스키마 객체(`${artworks.name_en}`)를 쓰면 Drizzle이
+`"artworks"."name_en"`으로 렌더링하지만 PostgreSQL 스코프에 `artworks` 테이블이
+없어 오류가 발생한다.  
+CTE가 만들어낸 컬럼명을 문자열로 직접 참조한다.
+
+```ts
+// CTE 내부 → artworks 테이블이 FROM에 있으므로 스키마 객체 사용 가능
+WITH artist_data AS (
+  SELECT ${artists.name_en}, ...
+  FROM ${artists}
+)
+// CTE 외부 → artist_data CTE만 스코프에 있으므로 컬럼명 문자열 사용
+SELECT ad.* FROM artist_data ad
+ORDER BY name_en ASC  -- ✅ 문자열
+-- ORDER BY ${artists.name_en} ASC  ← ❌ "artists" 테이블이 스코프에 없어 오류
+```
+
 ### Good
 
 ```ts
 sql`SELECT ${artworks.id}, ${artworks.name_ko} FROM ${artworks}`;
+
+// CTE 외부 ORDER BY
+sql`ORDER BY name_en ASC`;
 ```
 
 ### Bad
 
 ```ts
 sql`SELECT id, name_ko FROM artworks`;
+
+// CTE 외부에서 스키마 객체로 ORDER BY
+sql`ORDER BY ${artists.name_en} ASC`;
 ```
 
 ---

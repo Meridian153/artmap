@@ -40,9 +40,9 @@ const VALID_STATUS = new Set(["on_display", "in_storage", "on_loan", "under_rest
 // ─── 정렬 기준 매핑 ───────────────────────────────────────────────────────────
 
 const ORDER_BY_SQL: Record<string, SQL> = {
-  year_asc: sql`${artworks.year_created} ASC NULLS LAST`,
-  year_desc: sql`${artworks.year_created} DESC NULLS LAST`,
-  title_asc: sql`${artworks.title_en} ASC`,
+  year_asc: sql`year_created ASC NULLS LAST`,
+  year_desc: sql`year_created DESC NULLS LAST`,
+  title_asc: sql`title_en ASC`,
 };
 const DEFAULT_ORDER_BY = ORDER_BY_SQL["year_asc"]!;
 
