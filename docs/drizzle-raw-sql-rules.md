@@ -217,9 +217,10 @@ const rows = result.rows;
 ### Bad
 
 ```ts
-const rows = await db.execute<ArtworkRow>(sql`...`);
-// rows[0] 사용
-// Neon HTTP 환경에서는 rows가 객체에 감싸져 있어 직접 인덱싱하면 타입/런타임 에러
+const result = await db.execute<ArtworkRow>(sql`...`);
+// `result`는 NeonHttpQueryResult 객체이므로 배열이 아니다.
+// `result.rows`를 통해 실제 데이터 배열에 접근해야 한다.
+// result[0] 또는 result.length 사용 시 타입/런타임 에러 발생
 ```
 
 ---
