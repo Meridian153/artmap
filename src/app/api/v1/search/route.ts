@@ -9,7 +9,9 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import { artists, artworks, artworkArtists, institutions, places } from "@/lib/schema";
 import { badRequest, internalServerError, parseIntParam } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -97,22 +99,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       perPage,
       autocompleteLimit,
     );
-    const artistResult = await pool.query<ArtistSearchRow>(
-      `
+    const artistResult = await db.execute<ArtistSearchRow>(sql`
       SELECT
-        id,
-        name_ko,
-        name_en,
-        thumbnail_url,
+        ${artists.id},
+        ${artists.name_ko},
+        ${artists.name_en},
+        ${artists.thumbnail_url},
         COUNT(*) OVER() AS total_count
-      FROM artists
-      WHERE name_ko ILIKE '%' || $1 || '%'
-         OR name_en ILIKE '%' || $1 || '%'
-      ORDER BY name_en ASC
-      LIMIT $2 OFFSET $3
-      `,
-      [q, artistPg.limit, artistPg.offset],
-    );
+      FROM ${artists}
+      WHERE ${artists.name_ko} ILIKE ${"%" + q + "%"}
+         OR ${artists.name_en} ILIKE ${"%" + q + "%"}
+      ORDER BY ${artists.name_en} ASC
+      LIMIT ${artistPg.limit} OFFSET ${artistPg.offset}
+    `);
 
     // ── 작품 검색 ──────────────────────────────────────────────────────────
     const artworkPg = getCategoryPagination(
@@ -123,25 +122,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       perPage,
       autocompleteLimit,
     );
-    const artworkResult = await pool.query<ArtworkSearchRow>(
-      `
+    const artworkResult = await db.execute<ArtworkSearchRow>(sql`
       SELECT
-        aw.id,
-        aw.title_ko,
-        aw.title_en,
-        a.name_ko   AS artist_name_ko,
-        aw.image_url,
+        ${artworks.id},
+        ${artworks.title_ko},
+        ${artworks.title_en},
+        ${artists.name_ko}   AS artist_name_ko,
+        ${artworks.image_url},
         COUNT(*) OVER() AS total_count
-      FROM artworks aw
-      LEFT JOIN artwork_artists aa ON aa.artwork_id = aw.id
-      LEFT JOIN artists         a  ON a.id          = aa.artist_id
-      WHERE aw.title_ko ILIKE '%' || $1 || '%'
-         OR aw.title_en ILIKE '%' || $1 || '%'
-      ORDER BY aw.title_en ASC
-      LIMIT $2 OFFSET $3
-      `,
-      [q, artworkPg.limit, artworkPg.offset],
-    );
+      FROM ${artworks}
+      LEFT JOIN ${artworkArtists} aa ON aa.artwork_id = ${artworks.id}
+      LEFT JOIN ${artists}         ON ${artists.id}          = aa.artist_id
+      WHERE ${artworks.title_ko} ILIKE ${"%" + q + "%"}
+         OR ${artworks.title_en} ILIKE ${"%" + q + "%"}
+      ORDER BY ${artworks.title_en} ASC
+      LIMIT ${artworkPg.limit} OFFSET ${artworkPg.offset}
+    `);
 
     // ── 미술관 검색 ────────────────────────────────────────────────────────
     const museumPg = getCategoryPagination(
@@ -152,24 +148,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       perPage,
       autocompleteLimit,
     );
-    const museumResult = await pool.query<MuseumSearchRow>(
-      `
+    const museumResult = await db.execute<MuseumSearchRow>(sql`
       SELECT
-        i.id,
-        i.name_ko,
-        i.name_en,
-        p.city,
-        i.country_code,
+        ${institutions.id},
+        ${institutions.name_ko},
+        ${institutions.name_en},
+        ${places.city},
+        ${institutions.country_code},
         COUNT(*) OVER() AS total_count
-      FROM institutions i
-      LEFT JOIN places p ON p.institution_id = i.id
-      WHERE i.name_ko ILIKE '%' || $1 || '%'
-         OR i.name_en ILIKE '%' || $1 || '%'
-      ORDER BY i.name_en ASC
-      LIMIT $2 OFFSET $3
-      `,
-      [q, museumPg.limit, museumPg.offset],
-    );
+      FROM ${institutions}
+      LEFT JOIN ${places} ON ${places.institution_id} = ${institutions.id}
+      WHERE ${institutions.name_ko} ILIKE ${"%" + q + "%"}
+         OR ${institutions.name_en} ILIKE ${"%" + q + "%"}
+      ORDER BY ${institutions.name_en} ASC
+      LIMIT ${museumPg.limit} OFFSET ${museumPg.offset}
+    `);
 
     // ── 각 카테고리 전체 매칭 수 추출 ──────────────────────────────────────
     const artistsTotal =

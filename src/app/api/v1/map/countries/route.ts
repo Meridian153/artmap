@@ -3,7 +3,9 @@
 // [v1.2.0] Cache-Control: public, max-age=3600 응답 헤더 포함
 
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import { institutions, artworkOwnerships, artworks, places } from "@/lib/schema";
 import { internalServerError } from "@/lib/api-response";
 import { getCountryName } from "@/lib/country-names";
 import { createHash } from "crypto";
@@ -24,22 +26,23 @@ export async function GET(): Promise<NextResponse> {
   try {
     // institutions.country_code GROUP BY → artwork_ownerships COUNT(DISTINCT artwork_id)
     // places에서 국가 대표 좌표를 AVG로 계산
-    const { rows } = await pool.query<CountryRow>(`
+    const result = await db.execute<CountryRow>(sql`
       SELECT
-        i.country_code,
-        COUNT(DISTINCT ao.artwork_id)::integer AS artwork_count,
-        COUNT(DISTINCT i.id)::integer          AS museum_count,
-        AVG(p.latitude)::float                 AS latitude,
-        AVG(p.longitude)::float                AS longitude
-      FROM institutions i
-      JOIN artwork_ownerships ao ON ao.institution_id = i.id
-      JOIN artworks aw           ON aw.id = ao.artwork_id AND aw.deleted_at IS NULL
-      JOIN places p              ON p.institution_id  = i.id AND p.deleted_at IS NULL
-      WHERE i.deleted_at IS NULL
-      GROUP BY i.country_code
-      HAVING COUNT(DISTINCT ao.artwork_id) > 0
+        ${institutions.country_code},
+        COUNT(DISTINCT ${artworkOwnerships.artwork_id})::integer AS artwork_count,
+        COUNT(DISTINCT ${institutions.id})::integer          AS museum_count,
+        AVG(${places.latitude})::float                 AS latitude,
+        AVG(${places.longitude})::float                AS longitude
+      FROM ${institutions}
+      JOIN ${artworkOwnerships} ON ${artworkOwnerships.institution_id} = ${institutions.id}
+      JOIN ${artworks}           ON ${artworks.id} = ${artworkOwnerships.artwork_id} AND ${artworks.deleted_at} IS NULL
+      JOIN ${places}              ON ${places.institution_id}  = ${institutions.id} AND ${places.deleted_at} IS NULL
+      WHERE ${institutions.deleted_at} IS NULL
+      GROUP BY ${institutions.country_code}
+      HAVING COUNT(DISTINCT ${artworkOwnerships.artwork_id}) > 0
       ORDER BY artwork_count DESC
     `);
+    const rows = result.rows;
 
     // 국가 코드 → 한/영 국가명 변환 (정적 매핑)
     const data = rows.map((row) => ({

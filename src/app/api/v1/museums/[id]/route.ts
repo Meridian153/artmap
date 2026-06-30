@@ -4,7 +4,9 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import { institutions, places, institutionFeaturedArtworks, artworks } from "@/lib/schema";
 import { notFound, internalServerError, isValidUUID } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -50,33 +52,31 @@ export async function GET(
   }
 
   try {
-    const { rows } = await pool.query<MuseumDetailRow>(
-      `
+    const result = await db.execute<MuseumDetailRow>(sql`
       SELECT
-        i.id,
-        i.name_ko,
-        i.name_en,
-        i.institution_type,
-        i.country_code,
-        i.description_ko,
-        i.description_en,
-        i.website,
-        i.image_url,
-        p.name_ko    AS place_name_ko,
-        p.name_en    AS place_name_en,
-        p.country,
-        p.city,
-        p.address,
-        p.latitude::float,
-        p.longitude::float,
-        p.opening_hours,
-        p.admission
-      FROM institutions i
-      JOIN places p ON p.institution_id = i.id AND p.deleted_at IS NULL
-      WHERE i.id = $1 AND i.deleted_at IS NULL
-      `,
-      [id],
-    );
+        ${institutions.id},
+        ${institutions.name_ko},
+        ${institutions.name_en},
+        ${institutions.institution_type},
+        ${institutions.country_code},
+        ${institutions.description_ko},
+        ${institutions.description_en},
+        ${institutions.website},
+        ${institutions.image_url},
+        ${places.name_ko}    AS place_name_ko,
+        ${places.name_en}    AS place_name_en,
+        ${places.country},
+        ${places.city},
+        ${places.address},
+        ${places.latitude}::float,
+        ${places.longitude}::float,
+        ${places.opening_hours},
+        ${places.admission}
+      FROM ${institutions}
+      JOIN ${places} ON ${places.institution_id} = ${institutions.id} AND ${places.deleted_at} IS NULL
+      WHERE ${institutions.id} = ${id} AND ${institutions.deleted_at} IS NULL
+    `);
+    const rows = result.rows;
 
     if (rows.length === 0) {
       return notFound(instance);
@@ -84,20 +84,18 @@ export async function GET(
 
     const row = rows[0];
 
-    const { rows: featuredRows } = await pool.query<FeaturedRow>(
-      `
+    const featuredResult = await db.execute<FeaturedRow>(sql`
       SELECT
-        aw.id        AS artwork_id,
-        aw.title_ko  AS artwork_title,
-        aw.image_url AS artwork_image
-      FROM institution_featured_artworks ifa
-      JOIN artworks aw ON aw.id = ifa.artwork_id AND aw.deleted_at IS NULL
-      WHERE ifa.institution_id = $1
-      ORDER BY ifa.display_order ASC
+        ${artworks.id}        AS artwork_id,
+        ${artworks.title_ko}  AS artwork_title,
+        ${artworks.image_url} AS artwork_image
+      FROM ${institutionFeaturedArtworks}
+      JOIN ${artworks} ON ${artworks.id} = ${institutionFeaturedArtworks.artwork_id} AND ${artworks.deleted_at} IS NULL
+      WHERE ${institutionFeaturedArtworks.institution_id} = ${id}
+      ORDER BY ${institutionFeaturedArtworks.display_order} ASC
       LIMIT 1
-      `,
-      [id],
-    );
+    `);
+    const featuredRows = featuredResult.rows;
 
     const featured = featuredRows.length > 0 ? featuredRows[0] : null;
 

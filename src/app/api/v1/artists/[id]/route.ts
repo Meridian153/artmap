@@ -4,7 +4,17 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import {
+  artists,
+  artistMovements,
+  artMovements,
+  artworkArtists,
+  artworkOwnerships,
+  institutions,
+  artworks,
+} from "@/lib/schema";
 import { notFound, internalServerError, isValidUUID } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -45,37 +55,35 @@ export async function GET(
   }
 
   try {
-    const { rows } = await pool.query<ArtistDetailRow>(
-      `
+    const result = await db.execute<ArtistDetailRow>(sql`
       SELECT
-        a.id,
-        a.name_ko,
-        a.name_en,
-        a.birth_year,
-        a.death_year,
-        a.nationality,
-        a.bio_ko,
-        a.bio_en,
-        a.thumbnail_url,
+        ${artists.id},
+        ${artists.name_ko},
+        ${artists.name_en},
+        ${artists.birth_year},
+        ${artists.death_year},
+        ${artists.nationality},
+        ${artists.bio_ko},
+        ${artists.bio_en},
+        ${artists.thumbnail_url},
         JSON_AGG(
           JSON_BUILD_OBJECT(
-            'name_ko',      am.name_ko,
-            'name_en',      am.name_en,
-            'period_start', am.period_start,
-            'period_end',   am.period_end
+            'name_ko',      ${artMovements.name_ko},
+            'name_en',      ${artMovements.name_en},
+            'period_start', ${artMovements.period_start},
+            'period_end',   ${artMovements.period_end}
           )
-          ORDER BY am.period_start ASC NULLS LAST
-        ) FILTER (WHERE am.id IS NOT NULL) AS movements
-      FROM artists a
-      LEFT JOIN artist_movements arm ON arm.artist_id = a.id
-      LEFT JOIN art_movements    am  ON am.id = arm.movement_id
-      WHERE a.id = $1 AND a.deleted_at IS NULL
+          ORDER BY ${artMovements.period_start} ASC NULLS LAST
+        ) FILTER (WHERE ${artMovements.id} IS NOT NULL) AS movements
+      FROM ${artists}
+      LEFT JOIN ${artistMovements} ON ${artistMovements.artist_id} = ${artists.id}
+      LEFT JOIN ${artMovements} ON ${artMovements.id} = ${artistMovements.movement_id}
+      WHERE ${artists.id} = ${id} AND ${artists.deleted_at} IS NULL
       GROUP BY
-        a.id, a.name_ko, a.name_en, a.birth_year, a.death_year,
-        a.nationality, a.bio_ko, a.bio_en, a.thumbnail_url
-      `,
-      [id],
-    );
+        ${artists.id}, ${artists.name_ko}, ${artists.name_en}, ${artists.birth_year}, ${artists.death_year},
+        ${artists.nationality}, ${artists.bio_ko}, ${artists.bio_en}, ${artists.thumbnail_url}
+    `);
+    const rows = result.rows;
 
     if (rows.length === 0) {
       return notFound(instance);
@@ -83,20 +91,18 @@ export async function GET(
 
     const row = rows[0];
 
-    const { rows: museumRows } = await pool.query<TopMuseumRow>(
-      `
-      SELECT i.name_ko AS museum_name_ko
-      FROM artwork_artists aa
-      JOIN artwork_ownerships ao ON ao.artwork_id = aa.artwork_id
-      JOIN institutions i ON i.id = ao.institution_id AND i.deleted_at IS NULL
-      JOIN artworks aw ON aw.id = aa.artwork_id AND aw.deleted_at IS NULL
-      WHERE aa.artist_id = $1
-      GROUP BY i.id, i.name_ko
+    const museumResult = await db.execute<TopMuseumRow>(sql`
+      SELECT ${institutions.name_ko} AS museum_name_ko
+      FROM ${artworkArtists}
+      JOIN ${artworkOwnerships} ON ${artworkOwnerships.artwork_id} = ${artworkArtists.artwork_id}
+      JOIN ${institutions} ON ${institutions.id} = ${artworkOwnerships.institution_id} AND ${institutions.deleted_at} IS NULL
+      JOIN ${artworks} ON ${artworks.id} = ${artworkArtists.artwork_id} AND ${artworks.deleted_at} IS NULL
+      WHERE ${artworkArtists.artist_id} = ${id}
+      GROUP BY ${institutions.id}, ${institutions.name_ko}
       ORDER BY COUNT(*) DESC
       LIMIT 1
-      `,
-      [id],
-    );
+    `);
+    const museumRows = museumResult.rows;
 
     const topMuseumNameKo = museumRows.length > 0 ? museumRows[0].museum_name_ko : null;
 

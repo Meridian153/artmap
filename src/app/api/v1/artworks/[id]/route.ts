@@ -10,7 +10,17 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/db";
+import { db } from "@/lib/db";
+import { sql } from "drizzle-orm";
+import {
+  artworks,
+  artworkArtists,
+  artists,
+  artworkOwnerships,
+  institutions,
+  places,
+  artworkLocations,
+} from "@/lib/schema";
 import { notFound, internalServerError, isValidUUID } from "@/lib/api-response";
 
 // ─── DB 행 타입 ───────────────────────────────────────────────────────────────
@@ -73,34 +83,31 @@ export async function GET(
 
   try {
     // ── 1. 작품 기본 정보 + 대표 화가 조회 ─────────────────────────────────
-    const baseResult = await pool.query<ArtworkBaseRow>(
-      `
+    const baseResult = await db.execute<ArtworkBaseRow>(sql`
       SELECT
-        aw.id,
-        aw.title_ko,
-        aw.title_en,
-        aw.year_created,
-        aw.year_end,
-        aw.medium_ko,
-        aw.medium_en,
-        aw.dimensions,
-        aw.image_url,
-        aw.is_public_domain,
-        aw.status,
-        aw.curation_ko,
-        aw.curation_en,
-        a.id       AS artist_id,
-        a.name_ko  AS artist_name_ko,
-        a.name_en  AS artist_name_en
-      FROM artworks aw
-      LEFT JOIN artwork_artists aa ON aa.artwork_id = aw.id
-      LEFT JOIN artists         a  ON a.id          = aa.artist_id
-      WHERE aw.id = $1
-      ORDER BY a.name_en ASC
+        ${artworks.id},
+        ${artworks.title_ko},
+        ${artworks.title_en},
+        ${artworks.year_created},
+        ${artworks.year_end},
+        ${artworks.medium_ko},
+        ${artworks.medium_en},
+        ${artworks.dimensions},
+        ${artworks.image_url},
+        ${artworks.is_public_domain},
+        ${artworks.status},
+        ${artworks.curation_ko},
+        ${artworks.curation_en},
+        ${artists.id}       AS artist_id,
+        ${artists.name_ko}  AS artist_name_ko,
+        ${artists.name_en}  AS artist_name_en
+      FROM ${artworks}
+      LEFT JOIN ${artworkArtists} ON ${artworkArtists.artwork_id} = ${artworks.id}
+      LEFT JOIN ${artists}         ON ${artists.id}          = ${artworkArtists.artist_id}
+      WHERE ${artworks.id} = ${id}
+      ORDER BY ${artists.name_en} ASC
       LIMIT 1
-      `,
-      [id],
-    );
+    `);
 
     if (baseResult.rows.length === 0) {
       return notFound(instance);
@@ -110,26 +117,23 @@ export async function GET(
 
     // ── 2. 원소장처(primary_museum) 조회 ──────────────────────────────────
     // is_primary_owner=true 복수 행 시: 안정적인 결과를 위해 institution_id ASC 기준 1건 선택
-    const primaryResult = await pool.query<PrimaryMuseumRow>(
-      `
+    const primaryResult = await db.execute<PrimaryMuseumRow>(sql`
       SELECT
-        i.id,
-        i.name_ko,
-        i.name_en,
-        p.city,
-        i.country_code,
-        p.latitude::float,
-        p.longitude::float,
+        ${institutions.id},
+        ${institutions.name_ko},
+        ${institutions.name_en},
+        ${places.city},
+        ${institutions.country_code},
+        ${places.latitude}::float,
+        ${places.longitude}::float,
         COUNT(*) OVER() AS row_count
-      FROM artwork_ownerships ao
-      JOIN institutions i ON i.id             = ao.institution_id
-      JOIN places       p ON p.institution_id = i.id
-      WHERE ao.artwork_id = $1 AND ao.is_primary_owner = true
-      ORDER BY ao.institution_id ASC
+      FROM ${artworkOwnerships}
+      JOIN ${institutions} ON ${institutions.id}             = ${artworkOwnerships.institution_id}
+      JOIN ${places}       ON ${places.institution_id} = ${institutions.id}
+      WHERE ${artworkOwnerships.artwork_id} = ${id} AND ${artworkOwnerships.is_primary_owner} = true
+      ORDER BY ${artworkOwnerships.institution_id} ASC
       LIMIT 1
-      `,
-      [id],
-    );
+    `);
 
     // 복수 행 경고 로그 (Partial Unique Index 미적용 감지)
     if (primaryResult.rows.length > 0 && Number(primaryResult.rows[0].row_count) > 1) {
@@ -141,28 +145,25 @@ export async function GET(
 
     // ── 3. 현재 전시 위치(current_location) 조회 ─────────────────────────
     // end_date IS NULL 복수 행 시: start_date 가장 최근 1건 선택
-    const locationResult = await pool.query<CurrentLocationRow>(
-      `
+    const locationResult = await db.execute<CurrentLocationRow>(sql`
       SELECT
-        i.id        AS museum_id,
-        i.name_ko   AS museum_name_ko,
-        i.name_en   AS museum_name_en,
-        p.city,
-        i.country_code,
-        p.latitude::float,
-        p.longitude::float,
-        al.start_date,
-        al.end_date,
+        ${institutions.id}        AS museum_id,
+        ${institutions.name_ko}   AS museum_name_ko,
+        ${institutions.name_en}   AS museum_name_en,
+        ${places.city},
+        ${institutions.country_code},
+        ${places.latitude}::float,
+        ${places.longitude}::float,
+        ${artworkLocations.start_date},
+        ${artworkLocations.end_date},
         COUNT(*) OVER() AS row_count
-      FROM artwork_locations al
-      JOIN places       p ON p.id             = al.place_id
-      LEFT JOIN institutions i ON i.id        = p.institution_id
-      WHERE al.artwork_id = $1 AND al.end_date IS NULL
-      ORDER BY al.start_date DESC
+      FROM ${artworkLocations}
+      JOIN ${places}       ON ${places.id}             = ${artworkLocations.place_id}
+      LEFT JOIN ${institutions} ON ${institutions.id}        = ${places.institution_id}
+      WHERE ${artworkLocations.artwork_id} = ${id} AND ${artworkLocations.end_date} IS NULL
+      ORDER BY ${artworkLocations.start_date} DESC
       LIMIT 1
-      `,
-      [id],
-    );
+    `);
 
     // 복수 행 경고 로그 (Partial Unique Index 미적용 감지)
     if (locationResult.rows.length > 0 && Number(locationResult.rows[0].row_count) > 1) {
